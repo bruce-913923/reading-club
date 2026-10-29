@@ -754,10 +754,9 @@ body.speaker-window.stale .sp-stale { display: block; }
 
   .c0-prompt { margin: 8px 0 0; padding: 0 0 0 22px; border-left: 5px solid var(--primary, #3157d5); }
   .c0-prompt ul { list-style: none; margin: 0; padding: 0; }
-  .c0-prompt li { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; margin: 0; padding: 5px 0; border-bottom: 1px solid var(--line, #dfe5ef); font-size: 20px; line-height: 1.4; }
+  .c0-prompt li { display: block; margin: 0; padding: 5px 0; border-bottom: 1px solid var(--line, #dfe5ef); font-size: 20px; line-height: 1.4; }
   .c0-prompt li:last-child { border-bottom: 0; }
   .c0-prompt li b { color: var(--primary, #3157d5); }
-  .c0-ans { padding: 4px 14px; border-radius: 999px; background: var(--primary-soft, #eef2ff); color: var(--primary, #3157d5); font-size: 20px; font-weight: 700; white-space: nowrap; }
   .c0-keep { word-break: keep-all; overflow-wrap: anywhere; }  /* 中文長句只在標點處換行 */
   .c0-answer { display: inline-block; margin-right: 12px; padding: 2px 12px; border-radius: 999px; background: var(--primary, #3157d5); color: #fff; font-size: 20px; vertical-align: 2px; }
   /* 2026-10-29 加中文翻譯後騰空間：字寬加 5% 也不會切到底 */
@@ -824,21 +823,21 @@ body.speaker-window.stale .sp-stale { display: block; }
 
 <section class="slide" id="p3" data-chapter="第 0 章｜開場" data-seconds="45">
   <div class="slide-body c0-prompt-body">
-    <div class="eyebrow">讀書會題目原文（照抄）｜右邊是我在哪一章回答</div>
+    <div class="eyebrow">讀書會題目原文（照抄）</div>
     <h2>02｜AI 開發流程到底需要多少 Checker？</h2>
     <blockquote class="c0-prompt">
       <ul>
-        <li><span><b>探討問題：</b>如果人工 Code Review<span class="gloss">（程式碼審查）</span> 降低，CI<span class="gloss">（持續整合）</span> 到底需要多少 Checker<span class="gloss">（檢查機制）</span> 才足夠？Unit Test<span class="gloss">（單元測試）</span>、Integration Test<span class="gloss">（整合測試）</span>、SAST<span class="gloss">（靜態安全掃描）</span>、Architecture Test<span class="gloss">（架構測試）</span>、Mutation Test<span class="gloss">（變異測試）</span> 是否越多越好？</span><span class="c0-ans">第 1、2、5 章</span></li>
-        <li><span><b>問題本質：</b>Checker 本身也有維護成本、Pipeline<span class="gloss">（管線）</span> 時間與 False Positive<span class="gloss">（誤報）</span>；核心不是數量，而是要控制哪些 Failure Mode<span class="gloss">（失敗模式）</span>。</span><span class="c0-ans">第 1 章</span></li>
-        <li><span><b>解法：</b>從風險反推控制：Regression<span class="gloss">（回歸問題）</span>→Test<span class="gloss">（測試）</span>；Architecture Drift<span class="gloss">（架構漂移）</span>→Architecture Test；Security<span class="gloss">（資安）</span>→SAST；Breaking Change<span class="gloss">（破壞性變更）</span>→Compatibility Check<span class="gloss">（相容性檢查）</span>。採 Risk<span class="gloss">（風險）</span> → Control<span class="gloss">（控制）</span> → Checker。</span><span class="c0-ans">第 2 章</span></li>
-        <li><span><b>AI 時代差異：</b>Agent<span class="gloss">（AI 代理）</span> 可高速、跨大量檔案修改，因此原本靠工程師記得的規則，更需要變成機器強制。</span><span class="c0-ans">第 3、4 章</span></li>
+        <li><span><b>探討問題：</b>如果人工 Code Review<span class="gloss">（程式碼審查）</span> 降低，CI<span class="gloss">（持續整合）</span> 到底需要多少 Checker<span class="gloss">（檢查機制）</span> 才足夠？Unit Test<span class="gloss">（單元測試）</span>、Integration Test<span class="gloss">（整合測試）</span>、SAST<span class="gloss">（靜態安全掃描）</span>、Architecture Test<span class="gloss">（架構測試）</span>、Mutation Test<span class="gloss">（變異測試）</span> 是否越多越好？</span></li>
+        <li><span><b>問題本質：</b>Checker 本身也有維護成本、Pipeline<span class="gloss">（管線）</span> 時間與 False Positive<span class="gloss">（誤報）</span>；核心不是數量，而是要控制哪些 Failure Mode<span class="gloss">（失敗模式）</span>。</span></li>
+        <li><span><b>解法：</b>從風險反推控制：Regression<span class="gloss">（回歸問題）</span>→Test<span class="gloss">（測試）</span>；Architecture Drift<span class="gloss">（架構漂移）</span>→Architecture Test；Security<span class="gloss">（資安）</span>→SAST；Breaking Change<span class="gloss">（破壞性變更）</span>→Compatibility Check<span class="gloss">（相容性檢查）</span>。採 Risk<span class="gloss">（風險）</span> → Control<span class="gloss">（控制）</span> → Checker。</span></li>
+        <li><span><b>AI 時代差異：</b>Agent<span class="gloss">（AI 代理）</span> 可高速、跨大量檔案修改，因此原本靠工程師記得的規則，更需要變成機器強制。</span></li>
       </ul>
     </blockquote>
     <div class="thesis c0-keep"><span class="c0-answer">我的答案</span>Checker 要幾道：最少要放幾道由<b>風險</b>決定，最多能放幾道由<b>注意力</b>決定，中間的增減靠<b>資料</b>調整。</div>
   </div>
   <aside class="notes">
-    <p>這是讀書會給的題目，四句原文照抄，右邊是我在哪一章回答。</p>
-    <p>第一句問要多少、是不是越多越好，第 1、2、5 章會回答。第二句的三種成本，我都付過，在第 1 章。第三句是從風險反推，在第 2 章。第四句說靠工程師記得的規則，要變成機器強制，在第 3、4 章。</p>
+    <p>這是讀書會給的題目，四句原文照抄。</p>
+    <p>四句我不會每一句都講到。分享就是從自己的經驗出發，我只講自己真的踩過的部分，不一定能涵蓋全部。</p>
     <p>我的答案先放在最下面：最少放幾道看風險，最多放幾道看注意力，中間靠資料調整。</p>
     <p>接下來我照自己踩過的順序講。一開始，我跟大家一樣，覺得人看得少，那就多找幾家 AI 來 review。</p>
   </aside>
@@ -1039,249 +1038,22 @@ body.speaker-window.stale .sp-stale { display: block; }
     <p>AI Board 是我們團隊的 AI 開發流程看板。看板上的 skill，要在工具目錄裡找得到才算能用；目錄裡有自動掃描出來的，也有人手寫的條目。這個 PR 要讓工具目錄每小時自動更新。</p>
     <p>它跑了 6 輪 review，reviewer 一直要加嚴格檢查，第 4、5 輪各加了一道，就合併了。第 5 輪那道是：手寫條目蓋過掃描結果，就失敗。合併當天發現它跟登記流程衝突：有人照流程登記一支工具，下次排程就撞名，之後每小時失敗、整份目錄停更。還好那時還沒人登記，另一個 agent 先攔下來，當晚就改掉。</p>
     <p>我也刻意決定有 3 道不加，因為都會誤報。決定不加，也要有人負責。</p>
-    <p>所以到這裡的答案 1：Checker 不是越多越好，每加一道都有成本，還可能出事。那到底該加哪些？題目給的解法，是從風險反推。</p>
-  </aside>
-</section>
-
-<!-- slide-file: 03-risk.html -->
-<!-- 第 2 章｜那就從風險決定（P8–P11）。2026-10-29 照故事線改寫：每頁一個重點、最多一個案例，先講背景。數字與背景來源：research/github-evidence.md §0（第 1、5 點）、§2.2–2.3、§3.1、故事卡 D；research/claude-code-evidence.md §2.2–2.6、§5.1；research/readings-digest.md §2.E、§3、§6.3。 -->
-<style>
-  /* 第 2 章專用樣式：class 一律加 c3- 前綴 */
-  .c3-head { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-  .c3-head .legend { flex: 0 0 auto; margin: 0; }
-  .c3-head .eyebrow .reading { margin-left: 10px; }
-
-  /* P8：題目的四種風險，各配什麼 Checker、我們現況 */
-  .c3-rcc table { table-layout: fixed; }
-  .c3-rcc td { vertical-align: middle; }
-  .c3-rcc td b { color: var(--ink, #172033); }
-  .c3-rcc td small { display: block; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.3; }
-  .c3-rcc .c3-now .tag { margin-right: 8px; }
-  .c3-foot { margin: 0; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.5; }
-  .c3-foot .reading { margin-right: 8px; }
-
-  /* P9：三層，加一個從 AI 那層搬到機器那層的例子 */
-  .c3-tiers .card p { color: var(--ink, #172033); }
-  .c3-case p + p { margin-top: 6px; }
-  .c3-lv { display: inline-block; min-width: 5.4em; margin-right: 12px; padding: 1px 10px; border-left: 5px solid; border-radius: 6px; font-size: 18px; font-weight: 700; line-height: 1.4; vertical-align: 1px; }
-  .c3-lv.c3-a { border-color: var(--agent, #6d28d9); background: #f3edff; color: var(--agent, #6d28d9); }
-  .c3-lv.c3-m { border-color: var(--machine, #0f766e); background: #e6f6f4; color: var(--machine, #0f766e); }
-
-  /* P10：流程地圖（從實作到上線四站） */
-  .slide-body.c3-tight { gap: 16px; } /* 留餘裕：字型算得比較寬的瀏覽器也不會切到底 */
-  .c3-map { display: grid; grid-template-columns: 132px repeat(4, minmax(0, 1fr)); gap: 6px 18px; align-items: stretch; margin: 0; }
-  .c3-map .c3-corner { display: flex; align-items: center; justify-content: flex-end; }
-  .c3-map .c3-stop { position: relative; padding: 7px 4px; border: 2px solid #cbd5f5; border-radius: 12px; background: var(--paper, #fff); font-size: 22px; font-weight: 700; line-height: 1.2; text-align: center; }
-  .c3-map .c3-stop:not(.c3-stop-end)::after { content: "→"; position: absolute; top: 50%; right: -17px; transform: translateY(-50%); color: var(--primary, #3157d5); font-size: 18px; font-weight: 800; }
-  .c3-map .c3-rowh { display: flex; flex-direction: column; justify-content: center; gap: 1px; color: var(--ink, #172033); font-size: 18px; font-weight: 700; line-height: 1.3; }
-  .c3-map .c3-rowh small { color: var(--muted, #5d687b); font-size: 18px; font-weight: 400; }
-  .c3-map .c3-cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 4px; border-radius: 10px; background: #f8faff; text-align: center; font-size: 18px; line-height: 1.3; }
-  .c3-map .c3-cell small { color: var(--muted, #5d687b); font-size: 18px; }
-  .c3-pips { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; font-weight: 700; }
-  .c3-pips i { display: block; width: 14px; height: 14px; border-radius: 50%; }
-  .c3-pips i.c3-h { background: var(--human, #c2410c); }
-  .c3-pips i.c3-a { background: var(--agent, #6d28d9); }
-  .c3-chip { display: block; width: 100%; padding: 3px 6px; border-left: 5px solid; border-radius: 6px; font-size: 18px; line-height: 1.3; text-align: left; }
-  .c3-chip.c3-h { border-color: var(--human, #c2410c); background: #fff1e7; }
-  .c3-chip.c3-a { border-color: var(--agent, #6d28d9); background: #f3edff; }
-  .c3-chip.c3-m { border-color: var(--machine, #0f766e); background: #e6f6f4; }
-  .c3-none { color: #9aa3b2; font-size: 20px; }
-  .c3-bottom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; margin: 0; align-items: stretch; }
-  .c3-bottom .callout { margin: 0; padding: 12px 18px; }
-  .c3-bottom .thesis { display: flex; align-items: center; margin: 0; }
-  .c3-gaps ul { margin: 6px 0 0; padding-left: 1.2em; }
-  .c3-gaps li { margin: 0; font-size: 22px; line-height: 1.4; }
-
-  /* P11：看板前後對照（每個點＝一個節點；藍點是檢核點） */
-  .c3-ba { display: grid; grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1.2fr); gap: 12px; align-items: stretch; }
-  .c3-ba-arrow { align-self: center; color: var(--primary, #3157d5); font-size: 34px; font-weight: 800; text-align: center; }
-  .c3-ver { display: flex; flex-direction: column; gap: 4px; padding-top: 16px; padding-bottom: 16px; }
-  .c3-dots { display: grid; grid-template-columns: repeat(17, 11px); gap: 3px 4px; }
-  .c3-dots i { display: block; width: 11px; height: 11px; border-radius: 50%; background: #cfd5df; }
-  .c3-dots i.c3-c { background: var(--primary, #3157d5); }
-  .c3-ver .c3-ver-n { margin: 0; color: var(--ink, #172033); font-size: 22px; line-height: 1.4; }
-  .c3-ver .c3-ver-n b { font-size: 28px; }
-  .c3-ver .c3-k::before { content: ""; display: inline-block; width: 12px; height: 12px; margin: 0 6px 0 2px; border-radius: 50%; background: var(--primary, #3157d5); vertical-align: 3px; }
-  .c3-ver ul { margin: 0; padding-left: 1.1em; }
-  .c3-ver li { margin: 0; color: var(--ink, #172033); font-size: 20px; line-height: 1.4; }
-  /* 2026-10-29 加中文翻譯後騰空間：字寬加 5% 也不會切到底 */
-  .c3-rcc td, .c3-rcc th { padding: 7px 12px; }
-</style>
-
-<section class="slide" id="p8" data-chapter="第 2 章｜那就從風險決定" data-seconds="70">
-  <div class="slide-body">
-    <div class="eyebrow">那該加哪些？題目的解法：從風險反推</div>
-    <h2>先問會壞在哪，再決定放什麼</h2>
-    <div class="table-wrap c3-rcc">
-      <table>
-        <colgroup><col style="width:24%"><col style="width:30%"><col style="width:14%"><col style="width:32%"></colgroup>
-        <thead>
-          <tr><th>風險</th><th>Checker</th><th>放哪一站</th><th>我們現況</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><b>Regression<span class="gloss">（回歸問題）</span></b><small>改了 A 壞了 B</small></td>
-            <td><b>Unit Test<span class="gloss">（單元測試）</span>、Integration Test<span class="gloss">（整合測試）</span></b><small>單一邏輯、跨邊界</small></td>
-            <td>實作、PR</td>
-            <td class="c3-now"><span class="tag medium">部分</span>iOS 只在本機跑，<br>端到端靠手動 smoke<span class="gloss">（冒煙測試）</span></td>
-          </tr>
-          <tr>
-            <td><b>Architecture Drift<span class="gloss">（架構漂移）</span></b><small>結構慢慢歪掉</small></td>
-            <td><b>Architecture Test<span class="gloss">（架構測試）</span></b><small>依賴方向、分層</small></td>
-            <td>實作＋定期</td>
-            <td class="c3-now"><span class="tag low">幾乎沒有</span>只有 parity<span class="gloss">（行為一致）</span> 測試</td>
-          </tr>
-          <tr>
-            <td><b>Security<span class="gloss">（資安）</span></b><small>漏洞、秘密外洩</small></td>
-            <td><b>SAST<span class="gloss">（靜態安全掃描）</span></b><small>另配 secret、套件掃描</small></td>
-            <td>PR</td>
-            <td class="c3-now"><span class="tag low">沒有</span>三種掃描都沒有</td>
-          </tr>
-          <tr>
-            <td><b>Breaking Change<span class="gloss">（破壞性變更）</span></b><small>介面改壞別人</small></td>
-            <td><b>Compatibility Check<span class="gloss">（相容性檢查）</span></b><small>契約測試</small></td>
-            <td>PR＋上線前</td>
-            <td class="c3-now"><span class="tag medium">部分</span>只有看板的同步協定有</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="c3-foot"><span class="reading">R3 Fitness function</span>從最在乎的屬性推出要放的檢查，定期回頭看</p>
-  </div>
-  <aside class="notes">
-    <p>從風險反推，就是先問這裡最可能壞在哪，再決定放什麼 Checker<span class="gloss">（檢查機制）</span>、放在哪一站。題目舉了四種風險，我拿我們現在的狀況一個一個對。</p>
-    <p>Regression 是改了 A 壞了 B，靠 Unit 跟 Integration Test。我們 iOS 的測試只在本機跑，端到端靠我自己手動 smoke。Architecture Drift 是結構慢慢歪掉，要靠架構測試守依賴方向，我們只有 AI Board 那幾支 parity 測試勉強算。Security 要 SAST，再配 secret 跟套件掃描，這三種我們都沒有。Breaking Change 靠契約測試，只有 board-sync 跟 AI Board 之間的同步協定有。</p>
-    <p>所以最右邊這欄，老實說一個綠的都沒有。Fitness function<span class="gloss">（適應度函數）</span> 那篇講的也是這個順序：先排出大家最在乎的屬性，再推出要放哪些檢查，之後定期回頭看。</p>
-    <p>可是光把風險排出來還不夠，我還會再問一句：這種錯，誰抓得到？</p>
-  </aside>
-</section>
-
-<section class="slide" id="p9" data-chapter="第 2 章｜那就從風險決定" data-seconds="60">
-  <div class="slide-body">
-    <div class="c3-head">
-      <div class="eyebrow">再問：這種錯，誰抓得到？<span class="reading">R2 Harness engineering</span></div>
-      <div class="legend"><span class="human">人</span><span class="agent">agent</span><span class="machine">機器</span></div>
-    </div>
-    <h2>機器抓得到的、AI 抓得到一部分的、都抓不穩的</h2>
-    <div class="grid cols-3 c3-tiers">
-      <div class="card machine">
-        <strong>機器可靠抓到</strong>
-        <p>重複程式碼、缺測試、架構漂移<br>便宜又確定，每次改都能跑</p>
-      </div>
-      <div class="card agent">
-        <strong>AI 只抓到一部分</strong>
-        <p>語意重複、暴力修法、過度設計<br>貴，每次結果還可能不同</p>
-      </div>
-      <div class="card human">
-        <strong>兩者都抓不穩</strong>
-        <p>誤解需求、做了不需要的功能<br>只能靠人</p>
-      </div>
-    </div>
-    <div class="callout c3-case">
-      <strong>我的例子：AI Board 補強同步的一個 PR</strong>
-      <p><span class="c3-lv c3-a">AI 那層</span>同一個 commit<span class="gloss">（提交）</span> 跑兩次 review<span class="gloss">（審查）</span>：一次抓到真的並發 Critical<span class="gloss">（嚴重）</span>，5 分鐘後說 0 項</p>
-      <p><span class="c3-lv c3-m">機器那層</span>後來把它寫成測試，之後每次都會擋</p>
-    </div>
-  </div>
-  <aside class="notes">
-    <p>誰抓得到這件事，Harness engineering 那篇把 coding agent<span class="gloss">（AI 代理）</span> 常犯的錯分成三層。第一層機器就能可靠抓到，像重複程式碼、缺測試，便宜又確定。第二層 AI 只抓得到一部分，像暴力修法、過度設計，又貴又不穩。第三層兩邊都抓不穩，像誤解需求、做了不需要的功能，這種只能靠人。</p>
-    <p>第二層我自己踩過。AI Board 之前出過事，舊的狀態把新加的內容整份蓋掉，所以我開了一個 PR 補強同步。同一個 commit，我們自建的 Claude review 跑了兩次，第一次抓到一個真的 Critical：同時有兩筆修改進來，其中一筆會被悄悄蓋掉。5 分鐘後第二次跑，說 0 項。</p>
-    <p>AI 這次抓到算是碰巧，所以後來把它寫成測試，從 AI 那層搬到機器那層，之後每次都會擋。那這三層套回我們自己的流程，每一站到底有什麼？</p>
-  </aside>
-</section>
-
-<section class="slide" id="p10" data-chapter="第 2 章｜那就從風險決定" data-seconds="70">
-  <div class="slide-body c3-tight">
-    <div class="c3-head">
-      <div class="eyebrow">套回我們自己的流程：從實作到上線</div>
-      <div class="legend"><span class="human">人</span><span class="agent">agent</span><span class="machine">機器</span></div>
-    </div>
-    <h2>AI Board 上的流程：每一站有什麼、缺什麼</h2>
-    <div class="c3-map">
-      <div class="c3-corner"></div>
-      <div class="c3-stop">實作</div>
-      <div class="c3-stop">PR</div>
-      <div class="c3-stop">驗收</div>
-      <div class="c3-stop c3-stop-end">上線</div>
-
-      <div class="c3-rowh">看板檢核點<small>人 6、agent<span class="gloss">（AI 代理）</span> 2</small></div>
-      <div class="c3-cell"><span class="c3-pips" aria-label="人 3 個"><i class="c3-h"></i><i class="c3-h"></i><i class="c3-h"></i></span><small>RD<span class="gloss">（研發）</span> 檢查、畫面</small></div>
-      <div class="c3-cell"><span class="c3-pips" aria-label="agent 1 個、人 1 個"><i class="c3-a"></i><i class="c3-h"></i></span><small>agent 審、人合併</small></div>
-      <div class="c3-cell"><span class="c3-pips" aria-label="agent 1 個、人 2 個"><i class="c3-a"></i><i class="c3-h"></i><i class="c3-h"></i></span><small>找 bug<span class="gloss">（錯誤）</span>、審測試</small></div>
-      <div class="c3-cell"><span class="c3-none">—</span><small>沒有檢核點</small></div>
-
-      <div class="c3-rowh">實際在跑的<small>不分誰觸發</small><small>多半只是建議</small></div>
-      <div class="c3-cell"><span class="c3-chip c3-m">測試靠 AI 跑</span><span class="c3-chip c3-a">提交前自審</span></div>
-      <div class="c3-cell"><span class="c3-chip c3-a">AI reviewer<span class="gloss">（AI 審查者）</span></span><span class="c3-chip c3-m">CI：部分 repo<span class="gloss">（程式庫）</span></span></div>
-      <div class="c3-cell"><span class="c3-chip c3-h">手動 smoke<span class="gloss">（冒煙測試）</span></span></div>
-      <div class="c3-cell"><span class="c3-chip c3-m">server<span class="gloss">（伺服器）</span> 端守門</span><span class="c3-chip c3-h">人工監看</span></div>
-    </div>
-    <div class="c3-bottom">
-      <div class="callout danger c3-gaps">
-        <strong>還缺的</strong>
-        <ul>
-          <li>沒有 SAST<span class="gloss">（靜態安全掃描）</span></li>
-          <li>secret scan<span class="gloss">（金鑰外洩掃描）</span>、Dependabot<span class="gloss">（相依套件更新工具）</span> 全關</li>
-          <li>7 個預設分支都沒有保護規則</li>
-          <li>某個 iOS 專案沒有 build<span class="gloss">（建置）</span>、test CI</li>
-        </ul>
-      </div>
-      <div class="thesis"><span>最後把關的還是我自己，<br>86 個 PR 只有 9 個有人工 approve<span class="gloss">（核准）</span></span></div>
-    </div>
-  </div>
-  <aside class="notes">
-    <p>知道哪一層抓得到之後，我把它套回前面提過的 AI Board，也就是我們自己的流程。看板上要停下來給人或 agent 檢查的地方，叫檢核點。這張只取實作到上線這四站。橘色是人，紫色是 agent，綠色是機器。</p>
-    <p>上面一排是看板上設計的檢核點，人有 6 個，agent 只有 2 個。下面一排是實際在跑的，不管誰觸發。實作靠 AI 自己跑測試、提交前自己審；PR 最熱鬧，最多有 5 家 AI reviewer；驗收是我自己手動 smoke；上線有 server 端守門，加上我自己盯著。這些大部分只是建議。</p>
-    <p>左下是還缺的：沒有 SAST，secret scan 跟 Dependabot 都關著，7 個預設分支都沒有保護規則，某個 iOS 專案連 build、test 的 CI 都沒有。所以最後把關的還是我自己，86 個 PR 只有 9 個有人按 approve。</p>
-    <p>這些檢核點，也不是一開始就有的。</p>
-  </aside>
-</section>
-
-<section class="slide" id="p11" data-chapter="第 2 章｜那就從風險決定" data-seconds="40">
-  <div class="slide-body">
-    <div class="eyebrow">所以我的看板，從全自動改成把人加回來</div>
-    <h2>第一版讓 AI 取代人工複審和 QA，後來我改掉了</h2>
-    <div class="c3-ba">
-      <div class="card c3-ver">
-        <strong>6/10 第一版「full-auto」</strong>
-        <div class="c3-dots" role="img" aria-label="45 個節點，沒有一個是檢核點"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        <p class="c3-ver-n"><b>45</b> 個節點、<b>0</b> 個檢核點</p>
-        <ul>
-          <li>人只出現在 7 個「例外升級」節點</li>
-        </ul>
-      </div>
-      <div class="c3-ba-arrow" aria-hidden="true">→</div>
-      <div class="card c3-ver">
-        <strong>10/27 這一版</strong>
-        <div class="c3-dots" role="img" aria-label="102 個節點，其中 19 個是檢核點"><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        <p class="c3-ver-n"><b>102</b> 個節點、<span class="c3-k"><b>19</b> 個檢核點</span></p>
-        <ul>
-          <li>agent<span class="gloss">（AI 代理）</span> 檢 3 次不過就交給人</li>
-          <li>人工核准綁產物版本，產物一改就失效</li>
-        </ul>
-      </div>
-    </div>
-    <div class="thesis">到這裡的答案 2：最少要放幾道，由風險決定</div>
-  </div>
-  <aside class="notes">
-    <p>6 月 10 號的第一版叫 full-auto<span class="gloss">（全自動）</span>，45 個節點、0 個檢核點，AI 取代人工複審，也取代 QA<span class="gloss">（品質保證）</span>，人只在出例外時出現。</p>
-    <p>10 月 27 號這版有 19 個檢核點。剛剛第三層那種機器和 AI 都抓不穩的錯，就要有人停下來看；放人還是放 agent，看風險。agent 檢查 3 次不過就交給人；人核准的是某一個版本，產物一改，核准就失效。</p>
-    <p>所以到這裡，我的第二個答案：最少要放幾道，由風險決定。可是檢核點和規則都寫了，AI 真的會照做嗎？</p>
+    <p>所以到這裡的答案 1：Checker 不是越多越好，每加一道都有成本，還可能出事。那不要一直加 reviewer，改成寫規則，叫 AI 做完自己先驗證，行不行？</p>
   </aside>
 </section>
 
 <!-- slide-file: 04-soft-hard.html -->
-<!-- 第 3 章｜規則寫了，AI 不一定照做（P12–P13）。數字來源：research/claude-code-evidence.md §5.1（skill 觸發次數、對話期間 135 天、使用者層級 hook 1 支）；research/github-evidence.md §0 第 3、4 點（自建 Claude review 232 次）；research/github-author-items.md（ai-context 裡有 code review 的 SOP）；research/readings-digest.md §2（Harness engineering）。P12 的規則原文、「只被索引檔提到」已對照本機檔案與 transcript。改版前的「執行層級階梯」那頁，併進 05-hard-rules.html 的第一頁（現在的 P14）。 -->
+<!-- 第 2 章｜規則寫了，AI 不一定照做（P8–P9）。數字來源：research/claude-code-evidence.md §5.1（skill 觸發次數、對話期間 135 天、使用者層級 hook 1 支）；research/github-evidence.md §0 第 3、4 點（自建 Claude review 232 次）；research/github-author-items.md（ai-context 裡有 code review 的 SOP）；research/readings-digest.md §2（Harness engineering）。P8 的規則原文、「只被索引檔提到」已對照本機檔案與 transcript。改版前的「執行層級階梯」那頁，併進 05-hard-rules.html 的第一頁（現在的 P10）。 -->
 <style>
-  /* 第 3 章專用樣式：class 一律加 c4- 前綴，只補版面，不改共用元件 */
+  /* 第 2 章專用樣式：class 一律加 c4- 前綴，只補版面，不改共用元件 */
 
-  /* P12：規則原文 vs 0 次 */
+  /* P8：規則原文 vs 0 次 */
   .c4-top { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px; align-items: stretch; }
   .c4-sub { margin-top: 10px; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.5; }
   .c4-hero { display: flex; flex-direction: column; justify-content: center; }
   .c4-hero b { font-size: 96px; line-height: 1.05; }
 
-  /* P13：2×2（每格自己標座標，軸標怎麼畫都讀得懂） */
+  /* P9：2×2（每格自己標座標，軸標怎麼畫都讀得懂） */
   .c4-quad .cell { display: flex; flex-direction: column; gap: 6px; }
   .c4-qhead { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
   .c4-qhead small { color: var(--muted, #5d687b); font-size: 18px; }
@@ -1296,9 +1068,9 @@ body.speaker-window.stale .sp-stale { display: block; }
   }
 </style>
 
-<section class="slide" id="p12" data-chapter="第 3 章｜規則寫了，AI 不一定照做" data-seconds="90">
+<section class="slide" id="p8" data-chapter="第 2 章｜規則寫了，AI 不一定照做" data-seconds="90">
   <div class="slide-body">
-    <div class="eyebrow">檢核點和規則都寫了，AI 會照做嗎？</div>
+    <div class="eyebrow">那改成寫規則，叫 AI 做完自己驗證呢？</div>
     <h2>我寫了「必須執行、不得跳過」</h2>
     <div class="spacer"></div>
     <div class="c4-top">
@@ -1312,14 +1084,14 @@ body.speaker-window.stale .sp-stale { display: block; }
     <div class="thesis">寫在 markdown<span class="gloss">（純文字格式）</span> 裡的「必須」，還是軟規則</div>
   </div>
   <aside class="notes">
-    <p>會不會照做，我先講我自己的例子。</p>
+    <p>我真的這樣做過。</p>
     <p>我在 ai-context<span class="gloss">（AI 工作脈絡資料夾）</span> 放了幾份寫給 AI 看的規則，像 code review<span class="gloss">（程式碼審查）</span> 的 SOP<span class="gloss">（標準作業程序）</span> 就在裡面。其中一份是實作紀律檔，講 AI 實作時要守的事，標題就寫「強制規則」。畫面上這條是說：每個實作階段做完，必須跑 verification-before-completion<span class="gloss">（完成前先驗證）</span> 跟 requesting-code-review<span class="gloss">（請人審查程式碼）</span>，不得跳過。一個是做完先驗證，一個是做完請 review。我的想法很簡單，AI 說做完之前，要先驗證過、也被 review 過。</p>
-    <p>寫得夠兇了吧？我把 135 天的對話紀錄翻過一遍，這兩個 skill 被觸發 0 次。原因是只有一份索引檔提到這份檔，沒有任何專案的 AGENTS.md 或 CLAUDE.md 會載入它，AI 根本沒讀到。上一章我們照風險決定要放哪些檢查，可是 AI 不跑，放了也等於沒放。</p>
+    <p>寫得夠兇了吧？我把 135 天的對話紀錄翻過一遍，這兩個 skill 被觸發 0 次。原因是只有一份索引檔提到這份檔，沒有任何專案的 AGENTS.md 或 CLAUDE.md 會載入它，AI 根本沒讀到。規則寫了，AI 不跑，就跟沒寫一樣。</p>
     <p>所以寫在 markdown 裡的「必須」，還是軟規則。就算 AI 讀到了，也不一定會照做。那它為什麼會略過？</p>
   </aside>
 </section>
 
-<section class="slide" id="p13" data-chapter="第 3 章｜規則寫了，AI 不一定照做" data-seconds="90">
+<section class="slide" id="p9" data-chapter="第 2 章｜規則寫了，AI 不一定照做" data-seconds="90">
   <div class="slide-body">
     <div class="eyebrow">為什麼會略過：差在誰觸發、誰判定</div>
     <h2>軟和硬，差在誰決定規則有沒有被執行</h2>
@@ -1355,15 +1127,15 @@ body.speaker-window.stale .sp-stale { display: block; }
 </section>
 
 <!-- slide-file: 05-hard-rules.html -->
-<!-- 第 4 章｜把重要的規則做硬（P14–P16）。數字來源：research/claude-code-evidence.md §2.1（AskUserQuestion 06–10 月 149 次）、卡 2（7/8 board-sync 自己刪節點、使用者原話、SKILL.md 紅線、紅隊抓到跳過工具呼叫攔不住、server 大量刪除要帶雜湊重送、bench 6/8 與 3/8、haiku 宣稱已完成卻沒有執行 apply、寫錯欄位自報成功、改由腳本 fail-stop）；research/github-evidence.md §0 第 9 點、§2.2（驗證 workflow 檢查什麼、board-sync 所在的共用 skill 庫）、§2.4、故事卡 G（1/14、8/31、7 個半月、27 個 PR、8 個是我的、2 個真缺陷、commit 訊息原文）。改版前的階梯那頁併進現在的 P14；改版前的「驗證結果實例」那頁刪掉，只留 board-sync bench 一例併進現在的 P16。P16 的 Jev 查證網址見 research/verification-sources.md。 -->
+<!-- 第 3 章｜把重要的規則做硬（P10–P12）。數字來源：research/claude-code-evidence.md §2.1（AskUserQuestion 06–10 月 149 次）、卡 2（7/8 board-sync 自己刪節點、使用者原話、SKILL.md 紅線、紅隊抓到跳過工具呼叫攔不住、server 大量刪除要帶雜湊重送、bench 6/8 與 3/8、haiku 宣稱已完成卻沒有執行 apply、寫錯欄位自報成功、改由腳本 fail-stop）；research/github-evidence.md §0 第 9 點、§2.2（驗證 workflow 檢查什麼、board-sync 所在的共用 skill 庫）、§2.4、故事卡 G（1/14、8/31、7 個半月、27 個 PR、8 個是我的、2 個真缺陷、commit 訊息原文）。改版前的階梯那頁併進現在的 P10；改版前的「驗證結果實例」那頁刪掉，只留 board-sync bench 一例併進現在的 P12。P12 的 Jev 查證網址見 research/verification-sources.md。 -->
 <style>
-  /* 第 4 章專用樣式：class 一律加 c5- 前綴，只補版面，不改共用元件 */
+  /* 第 3 章專用樣式：class 一律加 c5- 前綴，只補版面，不改共用元件 */
 
-  /* P14：四種硬度用共用的 .ladder（DOM 由軟到硬寫，畫面由下而上越硬）；下面一行是升級的例子 */
+  /* P10：四種硬度用共用的 .ladder（DOM 由軟到硬寫，畫面由下而上越硬）；下面一行是升級的例子 */
   .c5-up { margin: 0; padding: 12px 20px; border: 1.5px dashed var(--primary, #3157d5); border-radius: 12px; color: var(--ink, #172033); font-size: 20px; line-height: 1.45; }
   .c5-up b { margin-right: 12px; color: var(--primary, #3157d5); }
 
-  /* P15：沉默的時間軸（單一序列，不需圖例；數值也寫在標籤與備註裡） */
+  /* P11：沉默的時間軸（單一序列，不需圖例；數值也寫在標籤與備註裡） */
   .c5-fig { margin: 0; }
   .c5-fighead { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 2px 0 0; font-size: 20px; line-height: 1.4; }
   .c5-team { display: inline-block; padding: 1px 10px; border: 1px solid var(--line, #dfe5ef); border-radius: 999px; background: var(--paper, #fff); color: var(--muted, #5d687b); font-size: 18px; font-weight: 600; white-space: nowrap; }
@@ -1379,7 +1151,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   .c5-p18 blockquote.quote { margin-top: 6px; }
   .c5-p18 blockquote.quote cite { display: inline; margin-left: 12px; }
 
-  /* P16：一個實例＋交接時附上驗證結果的流程（5 個節點）；Jev 一句話和圖例放在流程下方同一行 */
+  /* P12：一個實例＋交接時附上驗證結果的流程（5 個節點）；Jev 一句話和圖例放在流程下方同一行 */
   .flow.c5-flow { display: grid; grid-template-columns: minmax(0, .9fr) 24px minmax(0, 1fr) 24px minmax(0, 1.2fr) 24px minmax(0, 1.2fr) 24px minmax(0, 1.15fr); gap: 6px; align-items: stretch; }
   .c5-flow .node { padding: 10px 8px; }
   .c5-flow .c5-key { box-shadow: inset 0 0 0 2px var(--machine, #0f766e); }
@@ -1395,14 +1167,14 @@ body.speaker-window.stale .sp-stale { display: block; }
   .slide-body.c5-handoff-body { gap: 16px; }
 </style>
 
-<section class="slide" id="p14" data-chapter="第 4 章｜把重要的規則做硬" data-seconds="90">
+<section class="slide" id="p10" data-chapter="第 3 章｜把重要的規則做硬" data-seconds="90">
   <div class="slide-body">
     <div class="eyebrow">怎麼做硬：四種硬度，同樣的錯犯第二次就往上升一級</div>
     <h2>四種硬度：越上面，越不靠 AI 記得</h2>
     <div class="spacer"></div>
     <div class="ladder">
       <div class="rung"><b>會被提醒</b><span>寫在 CLAUDE.md<span class="gloss">（給 AI 看的專案規則檔）</span>、skill<span class="gloss">（技能）</span> 裡，要 AI 自己記得</span></div>
-      <div class="rung"><b>一定會被審</b><span>每個 PR 自動跑的 AI reviewer<span class="gloss">（AI 審查者）</span>、看板檢核點</span></div>
+      <div class="rung"><b>一定會被審</b><span>每個 PR 自動跑的 AI reviewer<span class="gloss">（AI 審查者）</span>、每天的排程</span></div>
       <div class="rung"><b>會被擋下</b><span>hook<span class="gloss">（觸發腳本）</span>、CI 必過，沒過就不能往下走</span></div>
       <div class="rung"><b>做不到</b><span>權限 deny<span class="gloss">（拒絕）</span>、不給憑證，AI 想做也做不了</span></div>
     </div>
@@ -1416,7 +1188,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   </aside>
 </section>
 
-<section class="slide" id="p15" data-chapter="第 4 章｜把重要的規則做硬" data-seconds="90">
+<section class="slide" id="p11" data-chapter="第 3 章｜把重要的規則做硬" data-seconds="90">
   <div class="slide-body c5-p18">
     <div class="eyebrow">但做硬了，也可能根本沒在跑</div>
     <h2>7 個半月沒跑，也沒有紅燈</h2>
@@ -1453,7 +1225,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   </aside>
 </section>
 
-<section class="slide" id="p16" data-chapter="第 4 章｜把重要的規則做硬" data-seconds="90">
+<section class="slide" id="p12" data-chapter="第 3 章｜把重要的規則做硬" data-seconds="90">
   <div class="slide-body c5-handoff-body">
     <div class="eyebrow">所以 AI 說做完了還不算</div>
     <h2>交接時附上驗證結果</h2>
@@ -1475,7 +1247,7 @@ body.speaker-window.stale .sp-stale { display: block; }
       </div>
       <div class="c5-legend-row"><p class="c5-jev">Jev：只回判定、不寫字的模型</p><div class="legend"><span class="human">人</span><span class="agent">agent</span><span class="machine">機器</span></div></div>
     </div>
-    <div class="thesis">到這裡的答案 3：重要的規則不能靠 AI 記得：<br>觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果</div>
+    <div class="thesis">到這裡的答案 2：重要的規則不能靠 AI 記得：<br>觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果</div>
   </div>
   <aside class="notes">
     <p>我自己就遇過 AI 說做完了，卻沒有做。board-sync 每次發版前，我都會用 benchmark 跑一組固定的情境題，看它有沒有變慢、變壞。有一次同一個版本量兩次，8 格只過 6 格、3 格，失敗都是 haiku 說做完了，卻沒有執行 apply<span class="gloss">（套用）</span>，也就是根本沒寫進看板。更早還有一次，它把字寫進錯的欄位，也跟我說成功。後來改由腳本判定，失敗就停。</p>
@@ -1486,7 +1258,7 @@ body.speaker-window.stale .sp-stale { display: block; }
 
 <!-- slide-file: 06-lifecycle.html -->
 <style>
-/* 第 5 章（P17–P20）專用樣式：class 一律 c6- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
+/* 第 4 章（P13–P16）專用樣式：class 一律 c6- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
 .c6-split { display: grid; grid-template-columns: 1.45fr 1fr; gap: 28px; align-items: center; }
 .c6-stats { gap: 10px; }
 .c6-stats .stat { display: grid; grid-template-columns: auto 1fr; column-gap: 14px; align-items: center; padding: 12px 18px; }
@@ -1500,7 +1272,7 @@ body.speaker-window.stale .sp-stale { display: block; }
 .c6-warn { color: var(--danger); }
 </style>
 
-<section class="slide" id="p17" data-chapter="第 5 章｜規則一多，又會被略過" data-seconds="70">
+<section class="slide" id="p13" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="70">
   <div class="slide-body">
     <p class="eyebrow">規則和檢查越做越多，就會被略過</p>
     <h2>人、警報、AI 都有這個現象</h2>
@@ -1525,13 +1297,13 @@ body.speaker-window.stale .sp-stale { display: block; }
     <p>這個問題就是：東西一多，就會被略過。我覺得不只 AI 會這樣，人和警報也一樣。</p>
     <p>先說人。我開的 86 個 PR 上，一共有 1,637 則對話，人親手寫的大概只有 45 則，百分之三左右。這不能怪大家偷懶，AI 一波就能貼三十則，人讀得完的就那幾則。</p>
     <p>警報也是。flaky 測試偶爾會無故變紅，久了大家就習慣不理紅燈。我們有一份回歸紀錄，就直接把唯一的紅燈算給一支老是 flaky 的舊測試，理由是單獨跑就過。</p>
-    <p>AI 也一樣，review 一多，它就只讀摘要。它漏讀過兩次，其中一次漏掉的那份 review，裡面就是前面那個並發 Critical。</p>
+    <p>AI 也一樣，review 一多，它就只讀摘要。它漏讀過兩次，其中一次漏掉的那份 review，裡面就有一個 Critical。</p>
     <p>寫《清單革命》的外科醫師 Gawande 講得很直接：好清單很短，只放最致命、不能漏的步驟。</p>
     <p>可是東西還是一直變多，那我自己是怎麼管的？</p>
   </aside>
 </section>
 
-<section class="slide" id="p18" data-chapter="第 5 章｜規則一多，又會被略過" data-seconds="75">
+<section class="slide" id="p14" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="75">
   <div class="slide-body">
     <p class="eyebrow">我怎麼管越來越多的東西：每天跑的一個循環</p>
     <h2>我的工作脈絡：自己記、自己清</h2>
@@ -1562,7 +1334,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   </aside>
 </section>
 
-<section class="slide" id="p19" data-chapter="第 5 章｜規則一多，又會被略過" data-seconds="80">
+<section class="slide" id="p15" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="80">
   <div class="slide-body">
     <p class="eyebrow">這個循環自己也出過錯</p>
     <h2>消化這一步，也是一道 Checker</h2>
@@ -1601,7 +1373,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   </aside>
 </section>
 
-<section class="slide" id="p20" data-chapter="第 5 章｜規則一多，又會被略過" data-seconds="75">
+<section class="slide" id="p16" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="75">
   <div class="slide-body">
     <p class="eyebrow">把同一個循環，套到 Checker 和規則上</p>
     <h2>要加還是要減，看記下來的資料</h2>
@@ -1619,7 +1391,7 @@ body.speaker-window.stale .sp-stale { display: block; }
       <div class="card">
         <strong>收斂</strong>
         <p>抓到真問題，寫成測試<br>一直誤報，就改結構</p>
-        <p class="c6-ex">例：並發 Critical<span class="gloss">（嚴重）</span> 寫成測試，之後每次都擋</p>
+        <p class="c6-ex">例：那個 Warning 改了結構，就不再出現</p>
       </div>
       <div class="card">
         <strong>淡出</strong>
@@ -1628,21 +1400,21 @@ body.speaker-window.stale .sp-stale { display: block; }
       </div>
     </div>
     <div class="callout danger"><b class="c6-warn">例外：罕見但致命的，不能照天數淡出。</b>資安、資料遺失這類，要先用演練證明它還擋得住。</div>
-    <div class="thesis">到這裡的答案 4：最多能放幾道，看人的注意力；中間靠資料增減</div>
+    <div class="thesis">到這裡的答案 3：最多能放幾道，看人的注意力；中間靠資料增減</div>
   </div>
   <aside class="notes">
     <p>工作脈絡會出的事，Checker<span class="gloss">（檢查機制）</span> 也一樣會出。所以我把同一個循環套到 Checker 和規則上，一樣四步。</p>
     <p>記錄：Checker 每響一次就記一筆，是真的抓到、誤報、重複，還是事後才發現漏掉。像登入畫面那個 PR，同一個 Warning 報了 4 次，有記下來才看得出它一直重複。</p>
     <p>消化：定期分類，不靠感覺。自建 review 跑了 232 次，只有一成二說沒問題，所以什麼時候停，只能人決定。</p>
-    <p>收斂：抓到的真問題就寫成測試，像那個並發 Critical；一直誤報的就改結構；同樣的錯犯第二次，就升一級。</p>
+    <p>收斂：抓到的真問題就寫成測試；一直誤報的就改結構，像那個 Warning，拿掉容易混淆的那層包裝，它就不再出現；同樣的錯犯第二次，就升一級。</p>
     <p>淡出：很久沒抓到真問題的，先降成提醒，再拿掉，機場的脫鞋規定也取消了。但資安、資料遺失這種罕見又致命的，不能照天數淡出，要先用演練證明它還擋得住。</p>
-    <p>所以最多能放幾道，看人的注意力；中間要加還是要減，靠資料。把四段答案拼起來，就是我的答案。</p>
+    <p>所以最多能放幾道，看人的注意力；中間要加還是要減，靠資料。把三段答案拼起來，就是我的答案。</p>
   </aside>
 </section>
 
 <!-- slide-file: 07-answer.html -->
 <style>
-/* 第 6 章（P21）專用樣式：class 一律 c7- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
+/* 第 5 章（P17）專用樣式：class 一律 c7- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
 .c7-list { display: flex; flex-direction: column; gap: 8px; }
 .c7-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) 236px; column-gap: 18px; align-items: center; padding: 8px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
 .c7-n { color: var(--primary); font-size: 22px; font-weight: 800; line-height: 1.3; white-space: nowrap; }
@@ -1654,9 +1426,9 @@ body.speaker-window.stale .sp-stale { display: block; }
 .slide-body.c7-body { gap: 16px; }
 </style>
 
-<section class="slide" id="p21" data-chapter="第 6 章｜我的答案" data-seconds="120">
+<section class="slide" id="p17" data-chapter="第 5 章｜我的答案" data-seconds="120">
   <div class="slide-body c7-body">
-    <p class="eyebrow">把四段答案拼起來</p>
+    <p class="eyebrow">把三段答案拼起來</p>
     <h2>下限看風險，上限看人的注意力，中間靠資料調整</h2>
     <div class="c7-list">
       <div class="c7-row">
@@ -1666,16 +1438,11 @@ body.speaker-window.stale .sp-stale { display: block; }
       </div>
       <div class="c7-row">
         <b class="c7-n">答案 2</b>
-        <div><p class="c7-a">最少要放幾道，由風險決定</p><p class="c7-r">回想：看板從全自動、0 個檢核點，改成把人加回來</p></div>
-        <span class="c7-to">下限看風險</span>
-      </div>
-      <div class="c7-row">
-        <b class="c7-n">答案 3</b>
         <div><p class="c7-a">重要的規則不能靠 AI 記得：觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果</p><p class="c7-r">回想：board-sync 的 benchmark<span class="gloss">（基準測試）</span> 裡，AI 說做完了，卻沒有做</p></div>
         <span class="c7-to">AI 時代：<br>重要的規則要做硬</span>
       </div>
       <div class="c7-row">
-        <b class="c7-n">答案 4</b>
+        <b class="c7-n">答案 3</b>
         <div><p class="c7-a">最多能放幾道，看人的注意力；中間靠資料增減</p><p class="c7-r">回想：我開的 86 個 PR 上，人親手寫的對話只有約 3% <em class="src estimated">估計</em></p></div>
         <span class="c7-to">上限看注意力，<br>中間靠資料</span>
       </div>
@@ -1683,19 +1450,18 @@ body.speaker-window.stale .sp-stale { display: block; }
     <p class="c7-foot"><span class="reading">R1 Swarm Forge</span>作者之一 Uncle Bob 說，他只核准規格、不讀 code <em class="src claimed">宣稱</em>；我也不讀 code，看的是驗證結果和 AC<span class="gloss">（驗收條件）</span></p>
   </div>
   <aside class="notes">
-    <p>這頁把前面四段答案拼起來，順序就是我自己踩過的順序。</p>
+    <p>這頁把前面三段答案拼起來。</p>
     <p>答案 1：Checker 不是越多越好，每加一道都有成本，還可能出事。像工具目錄那個 PR，reviewer 要我加的檢查，差點讓整份目錄每小時停更。這是前提，所以不能一直加。</p>
-    <p>答案 2：最少要放幾道，由風險決定。每一個出事會很痛的失敗模式，至少要有一道獨立的 Checker，獨立的意思是不同模型或不同人寫的，而且寫 code 的 AI 改不到它。我的看板從全自動改成把人加回來，就是這樣。這是下限。</p>
-    <p>答案 3 回答題目第四句的 AI 時代。題目說原本靠工程師記得的規則，要變成機器強制；我覺得換成 AI 也一樣，重要的規則不能靠 AI 記得。觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果。像 board-sync 的 benchmark，AI 說做完了，卻沒有做，所以不能只聽它說。</p>
-    <p>答案 4：最多能放幾道，看人的注意力。我開的 86 個 PR 上，人親手寫的對話只有百分之三左右，人讀得完的就這麼多。中間要加還是要減，就靠剛剛那個循環：每一道響了幾次、抓到幾次真問題都記下來，該收斂的收斂，該淡出的淡出。</p>
-    <p>讀物這邊，R1 的作者之一 Uncle Bob，媒體轉述他說現在只核准規格、不讀 code。我自己也不讀 code，我看的是驗證結果和 AC，這就是答案 3 在講的事。</p>
-    <p>合起來，就是我一開始放在題目下面的答案：下限看風險，上限看人的注意力，中間靠資料調整。最後，我留三句話和三個問題給大家。</p>
+    <p>答案 2 回答題目第四句的 AI 時代。題目說原本靠工程師記得的規則，要變成機器強制；我覺得換成 AI 也一樣，重要的規則不能靠 AI 記得。觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果。像 board-sync 的 benchmark，AI 說做完了，卻沒有做，所以不能只聽它說。</p>
+    <p>答案 3：最多能放幾道，看人的注意力。我開的 86 個 PR 上，人親手寫的對話只有百分之三左右，人讀得完的就這麼多。中間要加還是要減，就靠剛剛那個循環：每一道響了幾次、抓到幾次真問題都記下來，該收斂的收斂，該淡出的淡出。</p>
+    <p>讀物這邊，R1 的作者之一 Uncle Bob，媒體轉述他說現在只核准規格、不讀 code。我自己也不讀 code，我看的是驗證結果和 AC，這就是答案 2 在講的事。</p>
+    <p>合起來，就是我一開始放在題目下面的答案。上限看人的注意力、中間靠資料調整，這兩段今天都講了；下限看風險，出事會很痛的地方至少要有一道，這段我今天沒有展開。最後，我留三句話和三個問題給大家。</p>
   </aside>
 </section>
 
 <!-- slide-file: 08-close.html -->
 <style>
-/* 第 7 章（P22–P23）專用樣式：class 一律 c8- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
+/* 第 6 章（P18–P19）專用樣式：class 一律 c8- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
 .c8-pairs { display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px 18px; }
 .c8-head { font-size: 18px; font-weight: 700; color: var(--muted); letter-spacing: .08em; }
 .c8-take { position: relative; padding: 10px 16px 10px 62px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); font-weight: 700; line-height: 1.45; }
@@ -1712,7 +1478,7 @@ body.speaker-window.stale .sp-stale { display: block; }
 .c8-more li + li { margin-top: 2px; }
 </style>
 
-<section class="slide" id="p22" data-chapter="第 7 章｜收尾與討論" data-seconds="90">
+<section class="slide" id="p18" data-chapter="第 6 章｜收尾與討論" data-seconds="90">
   <div class="slide-body">
     <p class="eyebrow">收尾｜討論留到三位講者都講完</p>
     <h2>我想留給大家的三句話和三個問題</h2>
@@ -1738,7 +1504,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   </aside>
 </section>
 
-<section class="slide" id="p23" data-chapter="第 7 章｜收尾與討論" data-seconds="30">
+<section class="slide" id="p19" data-chapter="第 6 章｜收尾與討論" data-seconds="30">
   <div class="slide-body">
     <h2>參考資料</h2>
     <div class="c8-reads">
