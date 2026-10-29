@@ -1,0 +1,2187 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 開發流程到底需要多少 Checker？</title>
+<style id="deck-style">
+/* ============================================================================
+   deck.css — 外框與元件樣式（build.py 會內嵌進 index.html）
+
+   給寫章節片段的人
+   - 只用下面列出的 class。需要別的樣式，寫在片段最上面的 <style>，class 加章節
+     前綴（例如 .c5-receipt），不要改這個檔。
+   - 舞台 1280×720。內容放在 .slide-body 裡，可用範圍約 1152×604（上 64、下 52、
+     左右各 64 留給章節名、頁碼、進度條）。超出的部分在簡報模式會被裁掉，Task 6
+     會逐頁量 overflow；塞不下就少放，細節移到備註。
+   - 字級一律以舞台計：標題 ≥ 40px、內文 ≥ 22px、表格與註記 ≥ 18px。下面元件的
+     預設值都已符合；自訂樣式請同樣用 px 寫舞台尺寸。
+
+   兩種模式（同一份 HTML）
+   - 簡報模式 body.mode-slides（預設，只在 @media screen 生效）：只顯示 .slide.active，
+     舞台固定 1280×720，以 transform: scale() 等比縮放置中，四周黑邊。
+   - 筆記模式 body.mode-notes＝基本樣式：所有頁接成 960px 寬的長文；每頁的
+     .slide-body 以 zoom: .75 縮小（剛好是舞台寬度 1152 → 864），排版和舞台一樣、
+     高度跟著內容走，不會被截斷；.notes 展開成內文並加「講者備註」小標。
+     列印（@media print）和沒有 JS 時也是這個排版。
+
+   ── 頁的外殼 ────────────────────────────────────────────────────────────────
+     <section class="slide" id="p6" data-chapter="第 2 章｜Checker 越多越好？" data-seconds="60">
+       <div class="slide-body"> …畫面… </div>
+       <aside class="notes"> …口語逐字稿（可分好幾個 <p>）… </aside>
+     </section>
+     .slide-body   由上而下的 flex 直欄，子元素間距 24px，內文 24px。
+     .notes        簡報模式隱藏；按 S 會出現在講者視窗或頁內抽屜。
+
+   ── 文字 ────────────────────────────────────────────────────────────────────
+     .eyebrow            標題上方的小字（藍、20px）
+     h1                  封面大標（60px）
+     h2                  一般頁標題（44px）
+     .lead               導言（灰、28px）
+     .thesis             重點句方框（左側藍條、淡藍底、28px 粗體）
+     blockquote.quote    引文（28px）；出處寫在裡面的 <cite>，自動換行並加「— 」
+       <blockquote class="quote">短短一句引文<cite>作者，篇名</cite></blockquote>
+
+   ── 版面 ────────────────────────────────────────────────────────────────────
+     .grid.cols-2 / .cols-3 / .cols-4   等寬欄、間距 20px（欄內長字會換行，不會撐破）
+     .stack              直向堆疊、間距 16px
+     .spacer             吃掉 .slide-body 剩下的高度：放在中間＝把後面的內容推到底；
+                         前後各放一個＝垂直置中。筆記模式自動收掉。
+
+   ── 卡片 ────────────────────────────────────────────────────────────────────
+     <div class="card"><strong>標題</strong><p>說明</p></div>
+     .card.human / .card.agent / .card.machine   執行者上色：人＝暖橘、agent＝紫、
+                         機器＝藍綠。這三個 class 也能加在 .node、.cell、.step、
+                         .stat、.bar 上，全場同一套顏色；用到的頁要放圖例。
+     .legend             三色圖例。留空 <div class="legend"></div> 會自動補上
+                         「人／agent／機器」；也可自己寫
+                         <div class="legend"><span class="human">人</span><span class="agent">agent</span></div>
+
+   ── 大數字 ──────────────────────────────────────────────────────────────────
+     <div class="stat"><b>1,637</b><span>說明</span></div>
+     數字 60px；說明接在下一行。不是實測的數字，在說明後面加來源標籤。
+
+   ── 來源標籤（沒標＝實測；只有這四種要標，class 和文字要對上）────────────────
+     <em class="src estimated">估計</em>       黃底
+     <em class="src inferred">推論</em>        灰底
+     <em class="src claimed">宣稱</em>         紅框
+     <em class="src illustrative">示意</em>    虛線框
+     可以放在任何地方（標題、卡片、表格、長條的數值後面），一律 18px。
+
+   ── 中文翻譯（英文術語後面的括號）─────────────────────────────────────────────
+     reviewer<span class="gloss">（審查者）</span>   字小一點、淡一點，不搶主句。
+     每個術語在每頁畫面上第一次出現時加；備註只補畫面上沒有的。由 gloss.py 統一加（改完字之後跑一次）。
+
+   ── 提示框 ──────────────────────────────────────────────────────────────────
+     <div class="callout warning"><strong>第一行是標題</strong>內文…</div>
+     .callout.warning（黃）／.danger（紅）／.good（綠）；不加顏色是淡藍。
+
+   ── 表格 ────────────────────────────────────────────────────────────────────
+     <div class="table-wrap"><table><thead>…</thead><tbody>…</tbody></table></div>
+     內文 20px、表頭 18px。程度標記 <span class="tag high">高</span>、.tag.medium、
+     .tag.low：顏色是 綠／黃／紅，依顏色的意思挑（例如「低風險」可以用 .high）。
+
+   ── 流程 ────────────────────────────────────────────────────────────────────
+     <div class="flow">
+       <div class="node">PRD<small>需求與 AC</small></div>
+       <div class="arrow">→</div>               （.arrow 留空也會畫 →）
+       <div class="node machine">CI<small>測試必過</small></div>
+     </div>
+     .node 等寬等高、文字置中、22px 粗體；<small> 是副標（18px、換行顯示）。
+
+   ── 2×2 ─────────────────────────────────────────────────────────────────────
+     <div class="quad" data-x="觸發：AI 想到才做 → 系統一定觸發" data-y="判定：AI 判斷 → 程式判定">
+       <div class="cell">左上</div><div class="cell">右上</div>
+       <div class="cell">左下</div><div class="cell">右下</div>
+     </div>
+     data-x 是下方的橫軸標（由左往右讀）、data-y 是左側的直軸標（由下往上讀）。
+     依上面兩個軸標：右上＝系統一定觸發＋程式判定（最硬）、左下＝最軟。
+     .cell 裡放 <strong>標題</strong><p>說明</p>。
+
+   ── 階梯 ────────────────────────────────────────────────────────────────────
+     <div class="ladder">
+       <div class="rung"><b>memory</b><span>說明</span></div>      ← 第一個畫在最下面（最軟）
+       <div class="rung"><b>CLAUDE.md</b><span>說明</span></div>
+       <div class="rung"><b>hook</b><span>說明</span></div>        ← 最後一個在最上面（最硬）
+     </div>
+     由下而上越硬：每一階往右退一點、底色越深（最多 6 階）。
+
+   ── 循環 ────────────────────────────────────────────────────────────────────
+     <div class="loop">
+       <div class="step"><strong>記錄</strong><p>說明</p></div>   左上
+       <div class="step"><strong>消化</strong><p>說明</p></div>   右上
+       <div class="step"><strong>收斂</strong><p>說明</p></div>   右下
+       <div class="step"><strong>淡出</strong><p>說明</p></div>   左下
+     </div>
+     只放四個 .step，順時針排；箭頭 → ↓ ← ↑ 和中間的 ↻ 由 CSS 畫。
+
+   ── 長條 ────────────────────────────────────────────────────────────────────
+     <div class="bars">
+       <div class="bar" style="--v:.03"><span class="bar-label">人親手寫</span><span class="bar-value">約 3% <em class="src estimated">估計</em></span></div>
+       <div class="bar" style="--v:.69"><span class="bar-label">AI bot 留言</span><span class="bar-value">1,123 則</span></div>
+     </div>
+     --v 是 0–1（佔整條的比例）。長條 24px 粗、從同一條基線長出來，數值接在長條尾端。
+     預設藍色，可加 .human/.agent/.machine。可調：在 .bars 上設
+     style="--bar-label-w: 30%"（左側標籤欄寬）或 "--bar-value-room: 220px"（替最長
+     數值保留的寬度，預設 180px）。
+
+   ── 程式碼 ──────────────────────────────────────────────────────────────────
+     <pre class="code">…</pre>   18px 等寬；< 和 & 要寫成 &lt; &amp;。行內用 <code>。
+
+   ── 閱讀資料標記 ────────────────────────────────────────────────────────────
+     <span class="reading">R2 Harness engineering</span>   淡藍小膠囊、18px
+   ============================================================================ */
+
+:root {
+  --bg: #f5f7fb;
+  --paper: #fff;
+  --ink: #172033;
+  --muted: #5d687b;
+  --line: #dfe5ef;
+  --primary: #3157d5;
+  --primary-soft: #eef2ff;
+  --good: #13795b;
+  --good-soft: #eaf8f3;
+  --warn: #9a5b00;
+  --warn-soft: #fff5df;
+  --danger: #b42318;
+  --danger-soft: #fff0ee;
+  /* Checker 的三種執行者（全場固定） */
+  --human: #c2410c;
+  --human-soft: #fff1e7;
+  --agent: #6d28d9;
+  --agent-soft: #f3edff;
+  --machine: #0f766e;
+  --machine-soft: #e6f6f4;
+  --shadow: 0 12px 32px rgba(25, 40, 75, .08);
+  --font: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --letterbox: #0f1420;
+  --drawer-w: min(440px, 42vw);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  line-height: 1.75;
+}
+
+/* ── 基本排版＝筆記模式（也是列印與沒有 JS 時的樣子）──────────────────────── */
+
+.deck {
+  width: min(960px, calc(100% - 32px));
+  margin: 32px auto 72px;
+  counter-reset: slide;
+}
+
+.slide {
+  counter-increment: slide;
+  margin-top: 24px;
+  padding: 26px 48px 36px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  scroll-margin-top: 16px;
+}
+
+/* 每頁上方的小字：頁序、章節、建議秒數 */
+.slide::before {
+  content: counter(slide, decimal-leading-zero) "　·　" attr(data-chapter) "　·　建議 " attr(data-seconds) " 秒";
+  display: block;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: .04em;
+}
+
+.slide-body {
+  zoom: .75;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  font-size: 24px;
+  line-height: 1.45;
+}
+
+.slide-body > :where(*) { flex-shrink: 0; }
+
+.notes {
+  display: block;
+  margin-top: 28px;
+  padding: 16px 22px 18px;
+  border-left: 4px solid var(--primary);
+  border-radius: 10px;
+  background: #f8faff;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.notes::before {
+  content: "講者備註";
+  display: block;
+  margin-bottom: 6px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: .12em;
+}
+
+.notes p { margin: 0; }
+.notes p + p { margin-top: .6em; }
+.notes em.src,
+.speaker-panel em.src { font-size: 12px; }
+
+/* ── 元件（尺寸以 1280×720 舞台計）──────────────────────────────────────────── */
+
+:where(.slide-body) :where(h1, h2, h3, p) { margin: 0; }
+
+:where(.slide-body) h1 { font-size: 60px; line-height: 1.15; letter-spacing: -.02em; font-weight: 800; }
+:where(.slide-body) h2 { font-size: 44px; line-height: 1.22; letter-spacing: -.01em; font-weight: 750; }
+:where(.slide-body) h3 { font-size: 28px; line-height: 1.3; }
+:where(.slide-body) :where(ul, ol) { margin: 0; padding-left: 1.3em; }
+:where(.slide-body) li + li { margin-top: .3em; }
+:where(.slide-body) a { color: var(--primary); }
+:where(.slide-body) :where(img, svg) { max-width: 100%; height: auto; }
+
+:where(.slide-body) code {
+  padding: .1em .35em;
+  border-radius: 6px;
+  background: #eef1f6;
+  font-family: var(--mono);
+  font-size: .85em;
+}
+
+/* 文字 */
+.eyebrow { color: var(--primary); font-size: 20px; font-weight: 750; letter-spacing: .08em; }
+.lead { color: var(--muted); font-size: 28px; line-height: 1.45; }
+
+.thesis {
+  padding: 18px 24px;
+  border-left: 6px solid var(--primary);
+  border-radius: 12px;
+  background: var(--primary-soft);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.quote {
+  margin: 0;
+  padding: 4px 0 4px 26px;
+  border-left: 4px solid #cdd7ff;
+  font-size: 28px;
+  line-height: 1.45;
+}
+
+.quote :where(cite) {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 18px;
+  font-style: normal;
+}
+
+.quote :where(cite)::before { content: "— "; }
+
+/* 版面 */
+.grid { display: grid; gap: 20px; min-width: 0; }
+.grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.spacer { display: none; }
+
+/* 會被 .human/.agent/.machine 改色的元件，先設好預設色 */
+.card, .node, .cell, .step, .stat, .bar, .rung {
+  --c: var(--primary);
+  --c-soft: var(--primary-soft);
+}
+
+/* 卡片 */
+.card {
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbfcff;
+}
+
+.card > :where(strong) { display: block; margin-bottom: 6px; color: var(--c); font-size: 24px; line-height: 1.3; }
+.card :where(p) { margin: 0; color: var(--muted); font-size: 22px; line-height: 1.45; }
+.card :where(p + p) { margin-top: 8px; }
+
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px; color: var(--ink); font-size: 18px; line-height: 1.4; }
+.legend > :where(*) { display: inline-flex; align-items: center; gap: 8px; }
+.legend > :where(*)::before { content: ""; width: 14px; height: 14px; border-radius: 4px; background: var(--c, var(--muted)); }
+
+/* 大數字 */
+.stat {
+  min-width: 0;
+  padding: 16px 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbfcff;
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.stat > :where(b) { display: block; margin-bottom: 4px; color: var(--ink); font-size: 60px; font-weight: 700; line-height: 1.05; letter-spacing: -.02em; }
+.stat > :where(em.src) { margin-left: 8px; }
+
+/* 來源標籤 */
+em.src {
+  display: inline-block;
+  padding: 1px 10px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+em.src.estimated { color: var(--warn); background: var(--warn-soft); }
+em.src.inferred { color: var(--muted); background: #eef1f6; }
+em.src.claimed { color: var(--danger); background: var(--paper); border-color: var(--danger); }
+em.src.illustrative { color: var(--muted); background: var(--paper); border: 1.5px dashed var(--muted); }
+
+/* 中文翻譯：2026-10-29 講者要的「英文專有名詞後面括號中文翻譯」 */
+.gloss { font-size: .8em; font-weight: 400; opacity: .78; }
+
+/* 提示框 */
+.callout {
+  padding: 16px 22px;
+  border: 1px solid #cdd7ff;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.callout > :where(strong:first-child) { display: block; margin-bottom: 4px; font-size: 24px; }
+.callout.warning { background: var(--warn-soft); border-color: #f0d391; }
+.callout.danger { background: var(--danger-soft); border-color: #f4bbb5; }
+.callout.good { background: var(--good-soft); border-color: #a9dfcc; }
+.callout.warning > strong:first-child { color: var(--warn); }
+.callout.danger > strong:first-child { color: var(--danger); }
+.callout.good > strong:first-child { color: var(--good); }
+
+/* 表格（不用 overflow 裁圓角，內容超出時才量得到） */
+.table-wrap { min-width: 0; }
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.table-wrap :where(th, td) { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.table-wrap :where(th) { background: #f1f4f9; color: var(--ink); font-size: 18px; font-weight: 700; }
+.table-wrap table > :last-child > tr:last-child > * { border-bottom: 0; }
+.table-wrap table > :first-child > tr:first-child > :first-child { border-top-left-radius: 11px; }
+.table-wrap table > :first-child > tr:first-child > :last-child { border-top-right-radius: 11px; }
+.table-wrap table > :last-child > tr:last-child > :first-child { border-bottom-left-radius: 11px; }
+.table-wrap table > :last-child > tr:last-child > :last-child { border-bottom-right-radius: 11px; }
+
+.tag { display: inline-block; padding: 1px 12px; border-radius: 999px; font-size: 18px; font-weight: 700; line-height: 1.4; white-space: nowrap; }
+.tag.high { color: var(--good); background: var(--good-soft); }
+.tag.medium { color: var(--warn); background: var(--warn-soft); }
+.tag.low { color: var(--danger); background: var(--danger-soft); }
+
+/* 流程 */
+.flow { display: flex; align-items: stretch; gap: 10px; min-width: 0; }
+.flow > .node { flex: 1 1 0; }
+
+.node {
+  min-width: 0;
+  padding: 14px 12px;
+  border: 2px solid #cbd5f5;
+  border-radius: 12px;
+  background: var(--paper);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.node :where(small) { display: block; margin-top: 6px; color: var(--muted); font-size: 18px; font-weight: 400; line-height: 1.35; }
+.arrow { flex: 0 0 auto; align-self: center; color: var(--primary); font-size: 30px; font-weight: 800; line-height: 1; text-align: center; }
+.arrow:empty::before { content: "→"; }
+
+/* 2×2：::before 是左側直軸標、::after 是下方橫軸標，四個 .cell 自動填進右邊 2×2 */
+.quad {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.quad::before,
+.quad::after { color: var(--muted); font-size: 18px; font-weight: 700; letter-spacing: .04em; line-height: 1.3; text-align: center; }
+.quad::before { content: attr(data-y); grid-column: 1; grid-row: 1 / 3; align-self: center; writing-mode: vertical-rl; text-orientation: sideways; transform: rotate(180deg); }
+.quad::after { content: attr(data-x); grid-column: 2 / 4; grid-row: 3; }
+
+.cell {
+  min-width: 0;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbfcff;
+}
+
+.cell > :where(strong) { display: block; margin-bottom: 4px; color: var(--c); font-size: 24px; line-height: 1.3; }
+.cell :where(p) { margin: 0; color: var(--muted); font-size: 22px; line-height: 1.45; }
+
+/* 階梯：第一個 .rung 在最下面，越上面越硬（右移、底色加深） */
+.ladder { display: flex; flex-direction: column-reverse; gap: 10px; }
+
+.rung {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin-left: calc(var(--i, 0) * 6%);
+  padding: 12px 20px;
+  border: 1px solid #cdd7ff;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  background: color-mix(in srgb, var(--primary) calc(5% + var(--i, 0) * 4%), var(--paper));
+}
+
+.rung:nth-child(2) { --i: 1; }
+.rung:nth-child(3) { --i: 2; }
+.rung:nth-child(4) { --i: 3; }
+.rung:nth-child(5) { --i: 4; }
+.rung:nth-child(6) { --i: 5; }
+.rung > :where(b) { flex: 0 0 auto; min-width: 6.5em; color: var(--c); font-size: 24px; line-height: 1.3; }
+.rung > :where(span) { color: var(--ink); font-size: 22px; line-height: 1.4; }
+
+/* 循環：四個 .step 順時針排，箭頭畫在格子之間的空隙 */
+.loop { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px 76px; }
+.loop::before { content: "↻"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #b8c4ee; font-size: 44px; line-height: 1; }
+
+.step {
+  position: relative;
+  min-width: 0;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbfcff;
+}
+
+.step > :where(strong) { display: block; margin-bottom: 4px; color: var(--c); font-size: 24px; line-height: 1.3; }
+.step :where(p) { margin: 0; color: var(--muted); font-size: 22px; line-height: 1.45; }
+.loop > .step:nth-child(1) { grid-area: 1 / 1; }
+.loop > .step:nth-child(2) { grid-area: 1 / 2; }
+.loop > .step:nth-child(3) { grid-area: 2 / 2; }
+.loop > .step:nth-child(4) { grid-area: 2 / 1; }
+.loop > .step::after { position: absolute; color: var(--primary); font-size: 32px; font-weight: 800; line-height: 1; }
+.loop > .step:nth-child(1)::after { content: "→"; left: calc(100% + 22px); top: 50%; transform: translateY(-50%); }
+.loop > .step:nth-child(2)::after { content: "↓"; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+.loop > .step:nth-child(3)::after { content: "←"; right: calc(100% + 22px); top: 50%; transform: translateY(-50%); }
+.loop > .step:nth-child(4)::after { content: "↑"; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+
+/* 長條：.bar::before 是長條本身，數值緊接在長條尾端；.bars::before 是共同基線 */
+.bars {
+  --bar-label-w: 32%;
+  --bar-value-room: 180px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bars::before { content: ""; position: absolute; top: 0; bottom: 0; left: calc(var(--bar-label-w) + 15px); width: 1px; background: #b8c2d6; }
+
+.bar {
+  --v: 0;
+  display: grid;
+  grid-template-columns: var(--bar-label-w) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 16px;
+  min-height: 36px;
+}
+
+.bar::before {
+  content: "";
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: start;
+  width: calc(var(--v) * (100% - var(--bar-value-room)));
+  height: 24px;
+  border-radius: 0 4px 4px 0;
+  background: var(--c);
+}
+
+.bar-label { grid-column: 1; grid-row: 1; color: var(--ink); font-size: 20px; line-height: 1.3; text-align: right; }
+.bar-value { grid-column: 2; grid-row: 1; justify-self: start; margin-left: calc(var(--v) * (100% - var(--bar-value-room)) + 10px); color: var(--ink); font-size: 20px; font-weight: 700; line-height: 1.3; white-space: nowrap; }
+
+/* 程式碼 */
+pre.code {
+  margin: 0;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f6f8fc;
+  color: #1f2a44;
+  font-family: var(--mono);
+  font-size: 18px;
+  line-height: 1.5;
+  white-space: pre;
+  tab-size: 2;
+}
+
+/* 閱讀資料標記 */
+.reading {
+  display: inline-block;
+  padding: 1px 12px;
+  border: 1px solid #cdd7ff;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+/* 執行者三色：只設定 --c／--c-soft（要放在所有元件之後才蓋得過預設色） */
+.human { --c: var(--human); --c-soft: var(--human-soft); }
+.agent { --c: var(--agent); --c-soft: var(--agent-soft); }
+.machine { --c: var(--machine); --c-soft: var(--machine-soft); }
+:is(.card, .node, .cell, .step):is(.human, .agent, .machine) { border-color: var(--c); background: var(--c-soft); }
+.stat:is(.human, .agent, .machine) { border-top: 5px solid var(--c); }
+
+/* ── 外框：章節名、頁碼、模式按鈕、進度條（只在簡報模式出現；筆記模式只留按鈕）── */
+
+.hud { display: none; }
+.hud-top { position: absolute; top: 16px; left: 28px; right: 28px; display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
+.hud-chapter { color: var(--muted); font-size: 18px; line-height: 1.4; }
+.hud-page { position: absolute; right: 28px; bottom: 16px; color: var(--muted); font-size: 18px; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.progress { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: var(--line); }
+.progress-bar { width: 0; height: 100%; background: var(--primary); transition: width .2s ease-out; }
+
+.mode-toggle,
+.drawer-close {
+  padding: 2px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--muted);
+  font: inherit;
+  font-size: 18px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.mode-toggle:hover,
+.drawer-close:hover { border-color: #cdd7ff; background: var(--primary-soft); color: var(--primary); }
+
+body.mode-notes .hud { display: block; }
+body.mode-notes .hud-chapter,
+body.mode-notes .hud-page,
+body.mode-notes .progress { display: none; }
+body.mode-notes .hud-top { position: fixed; top: 14px; left: auto; right: 14px; z-index: 5; }
+body.mode-notes .mode-toggle { font-size: 15px; box-shadow: var(--shadow); }
+
+/* ── 講者備註：頁內抽屜與獨立視窗共用 .speaker-panel ─────────────────────── */
+
+.notes-drawer { display: none; }
+.drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.drawer-close { font-size: 14px; }
+
+.speaker-panel { color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; }
+.sp-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); font-size: 13px; }
+.sp-page { color: var(--primary); font-weight: 750; font-variant-numeric: tabular-nums; }
+.sp-title { margin: 2px 0 12px; font-size: 20px; font-weight: 750; line-height: 1.35; }
+
+.sp-clock {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 2px 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f8faff;
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-clock > span { color: var(--muted); font-size: 14px; }
+.sp-clock > b { font-size: 22px; }
+.sp-clock > b.sp-over { color: var(--danger); }
+.sp-status { grid-column: 1 / -1; font-weight: 750; }
+.sp-status.ahead { color: var(--good); }
+.sp-status.behind { color: var(--danger); }
+.sp-status.idle { color: var(--muted); font-size: 14px; font-weight: 500; }
+.sp-notes { margin-top: 14px; font-size: 17px; line-height: 1.8; }
+.sp-notes p { margin: 0 0 .6em; }
+.sp-next { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+.sp-keys { margin-top: 4px; color: var(--muted); font-size: 12px; }
+
+/* 獨立講者視窗（deck.js 把這份 CSS 複製過去） */
+body.speaker-window { margin: 0; background: var(--paper); }
+body.speaker-window .speaker-panel { padding: 18px 24px 28px; }
+body.speaker-window .sp-title { font-size: 24px; }
+body.speaker-window .sp-notes { font-size: 21px; }
+.sp-stale { display: none; margin: 0; padding: 8px 24px; background: var(--warn-soft); color: var(--warn); font-size: 14px; font-weight: 700; }
+body.speaker-window.stale .sp-stale { display: block; }
+
+/* ── 簡報模式（只在螢幕上；列印永遠是筆記模式的排版）──────────────────────── */
+
+@media screen {
+  body.mode-slides { overflow: hidden; background: var(--letterbox); }
+  body.mode-slides .viewport { position: fixed; inset: 0; overflow: hidden; }
+  body.mode-slides.drawer-open .viewport { right: var(--drawer-w); }
+
+  body.mode-slides .stage {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: linear-gradient(160deg, #fff 58%, #f3f6ff);
+    transform: translate(-50%, -50%) scale(var(--scale, 1));
+  }
+
+  body.mode-slides .deck { position: absolute; inset: 0; width: auto; margin: 0; }
+
+  body.mode-slides .slide {
+    display: none;
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  body.mode-slides .slide.active { display: block; }
+  body.mode-slides .slide::before { content: none; }
+  body.mode-slides .slide-body { zoom: 1; position: absolute; inset: 64px 64px 52px; overflow: hidden; }
+  body.mode-slides .notes { display: none; }
+  body.mode-slides .spacer { display: block; flex: 1 0 0; }
+  body.mode-slides .hud { display: block; }
+
+  body.mode-slides.drawer-open .notes-drawer {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    width: var(--drawer-w);
+    background: var(--paper);
+    border-left: 1px solid var(--line);
+    box-shadow: -12px 0 32px rgba(25, 40, 75, .12);
+  }
+
+  body.mode-slides.drawer-open .notes-drawer .speaker-panel { flex: 1; overflow-y: auto; padding: 14px 18px 24px; }
+
+  /* 筆記模式的程式碼與表格可以橫向捲動（窄螢幕） */
+  body:not(.mode-slides) pre.code,
+  body:not(.mode-slides) .table-wrap { overflow-x: auto; }
+}
+
+/* 窄螢幕讀筆記：欄位改成一欄、流程改直排 */
+@media screen and (max-width: 760px) {
+  body:not(.mode-slides) .deck { width: calc(100% - 20px); margin-top: 10px; }
+  body:not(.mode-slides) .slide { padding: 18px 16px 22px; border-radius: 14px; }
+  body:not(.mode-slides) .grid { grid-template-columns: minmax(0, 1fr); }
+  body:not(.mode-slides) .flow { flex-direction: column; }
+  body:not(.mode-slides) .flow > .arrow { transform: rotate(90deg); }
+}
+
+/* ── 列印：筆記模式的排版，每頁不拆開，講者備註印成內文 ────────────────────── */
+
+@media print {
+  @page { margin: 12mm; }
+  body { background: #fff; }
+  .hud,
+  .notes-drawer { display: none !important; }
+  .deck { width: auto; margin: 0; }
+  .slide { margin: 0 0 8mm; padding: 14px 20px 18px; border-color: #d5dbe6; box-shadow: none; break-inside: avoid; }
+  .slide-body { zoom: .6; break-inside: avoid; }
+  pre.code { white-space: pre-wrap; overflow-wrap: anywhere; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+</style>
+</head>
+<body>
+<!-- 有 JS 就預設簡報模式；沒有 JS（例如檔案預覽）時保持筆記模式的長文排版 -->
+<script>document.body.className = "mode-slides";</script>
+<div class="viewport" id="viewport">
+  <div class="stage" id="stage">
+    <main class="deck" id="deck">
+
+<!-- slide-file: 00-opening.html -->
+<!-- 第 0 章｜開場（P1–P3）。P2 機場事實已在 2026-10-28 查證（TSA 大事記、TSA PreCheck 說明、DHS 2025-07-08 新聞稿、歐盟 CORDIS）。 -->
+<style>
+  /* 第 0 章專用樣式：class 一律加 c0- 前綴 */
+  .c0-cover { display: flex; flex-direction: column; justify-content: center; min-height: 520px; }
+  .c0-byline { display: flex; flex-direction: column; gap: 6px; margin-top: 36px; }
+  .c0-byline b { font-size: 30px; }
+  .c0-byline span { font-size: 22px; color: var(--muted, #5d687b); }
+
+  .c0-airport .card { display: flex; flex-direction: column; }
+  .c0-token { display: block; margin: 2px 0 6px; font-size: 36px; font-weight: 800; line-height: 1.15; color: var(--ink, #172033); }
+  .c0-source { margin: 4px 0 0; font-size: 18px; color: var(--muted, #5d687b); }
+
+  .c0-prompt { margin: 8px 0 0; padding: 0 0 0 22px; border-left: 5px solid var(--primary, #3157d5); }
+  .c0-prompt ul { list-style: none; margin: 0; padding: 0; }
+  .c0-prompt li { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; margin: 0; padding: 5px 0; border-bottom: 1px solid var(--line, #dfe5ef); font-size: 20px; line-height: 1.4; }
+  .c0-prompt li:last-child { border-bottom: 0; }
+  .c0-prompt li b { color: var(--primary, #3157d5); }
+  .c0-ans { padding: 4px 14px; border-radius: 999px; background: var(--primary-soft, #eef2ff); color: var(--primary, #3157d5); font-size: 20px; font-weight: 700; white-space: nowrap; }
+  .c0-keep { word-break: keep-all; overflow-wrap: anywhere; }  /* 中文長句只在標點處換行 */
+  .c0-answer { display: inline-block; margin-right: 12px; padding: 2px 12px; border-radius: 999px; background: var(--primary, #3157d5); color: #fff; font-size: 20px; vertical-align: 2px; }
+  /* 2026-10-29 加中文翻譯後騰空間：字寬加 5% 也不會切到底 */
+  .slide-body.c0-airport-body { gap: 20px; }
+  .c0-airport .card p { font-size: 19px; line-height: 1.4; }
+  .slide-body.c0-prompt-body { gap: 16px; }
+  .c0-prompt .gloss { font-size: .72em; }
+</style>
+
+<section class="slide" id="p1" data-chapter="第 0 章｜開場" data-seconds="15">
+  <div class="slide-body c0-cover">
+    <div class="eyebrow">讀書會 02｜2026-10-29</div>
+    <h1>AI 開發流程<br>到底需要多少 Checker？</h1>
+    <p class="lead">從開發到上線，每一站要放幾道檢查</p>
+    <div class="c0-byline">
+      <b>陳志鴻</b>
+      <span>沒標的數字都是實測；有標的才是估計、推論、宣稱或示意</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>大家好，今天的題目是「AI 開發流程到底需要多少 Checker？」</p>
+    <p>我會從開發到上線這一段來講，每一站要放幾道檢查。先拿機場安檢當例子。</p>
+  </aside>
+</section>
+
+<section class="slide" id="p2" data-chapter="第 0 章｜開場" data-seconds="60">
+  <div class="slide-body c0-airport-body">
+    <div class="eyebrow">先講個大家都熟的例子</div>
+    <h2>機場安檢：每一道檢查都有來歷</h2>
+    <div class="grid cols-4 c0-airport">
+      <div class="card">
+        <strong>出事才加上去</strong>
+        <span class="c0-token">100ml</span>
+        <p>2006 年英國破獲液體炸彈陰謀，之後隨身液體才開始限量</p>
+      </div>
+      <div class="card">
+        <strong>分級檢查</strong>
+        <span class="c0-token">PreCheck</span>
+        <p>事先審過背景的旅客走快速線；TSA<span class="gloss">（美國運輸安全管理局）</span> 說這是依風險的安檢</p>
+      </div>
+      <div class="card">
+        <strong>誤報有成本</strong>
+        <span class="c0-token">嗶嗶</span>
+        <p>儀器一響就可能要搜身複檢；誤報越多，整排一起等</p>
+      </div>
+      <div class="card">
+        <strong>規則會退場</strong>
+        <span class="c0-token">脫鞋</span>
+        <p>2001 年鞋子炸彈未遂，2006 年起美國安檢要脫鞋，2025 年 7 月取消</p>
+      </div>
+    </div>
+    <div class="thesis">換成寫 code<span class="gloss">（程式碼）</span>：人看 code 越來越少，我的 PR<span class="gloss">（合併請求）</span> 最多同時有 5 家 AI 在審<br>到底要設幾道安檢？</div>
+    <p class="c0-source">出處（2026-10-28 查證）：TSA 大事記、TSA PreCheck 說明、DHS 2025-07-08 新聞稿、歐盟 CORDIS</p>
+  </div>
+  <aside class="notes">
+    <p>機場安檢大家都排過。安檢的每一道檢查，背後都有它的來歷。</p>
+    <p>像隨身液體要限量，是 2006 年英國破獲液體炸彈陰謀之後才開始的，等於是出了事才加上去。</p>
+    <p>有些檢查是分級的。美國有 PreCheck，事先審過背景的人可以走快速線，TSA 自己說這是依風險來做的安檢，不是每個人都要做全套。</p>
+    <p>誤報也有成本。儀器一響，就可能要搜身，後面整排的人一起等。</p>
+    <p>有些規則後來也會取消。2001 年有人把炸藥藏在鞋子裡，美國從 2006 年開始規定要脫鞋，到 2025 年 7 月取消了，官方講的理由之一就是要縮短排隊時間。</p>
+    <p>寫 code 也一樣。現在人看 code 越來越少，我的 PR 最多同時有 5 家 AI 在審，那到底要設幾道安檢？讀書會的題目問的就是這個。</p>
+  </aside>
+</section>
+
+<section class="slide" id="p3" data-chapter="第 0 章｜開場" data-seconds="45">
+  <div class="slide-body c0-prompt-body">
+    <div class="eyebrow">讀書會題目原文（照抄）｜右邊是我在哪一章回答</div>
+    <h2>02｜AI 開發流程到底需要多少 Checker？</h2>
+    <blockquote class="c0-prompt">
+      <ul>
+        <li><span><b>探討問題：</b>如果人工 Code Review<span class="gloss">（程式碼審查）</span> 降低，CI<span class="gloss">（持續整合）</span> 到底需要多少 Checker<span class="gloss">（檢查機制）</span> 才足夠？Unit Test<span class="gloss">（單元測試）</span>、Integration Test<span class="gloss">（整合測試）</span>、SAST<span class="gloss">（靜態安全掃描）</span>、Architecture Test<span class="gloss">（架構測試）</span>、Mutation Test<span class="gloss">（變異測試）</span> 是否越多越好？</span><span class="c0-ans">第 1、2、5 章</span></li>
+        <li><span><b>問題本質：</b>Checker 本身也有維護成本、Pipeline<span class="gloss">（管線）</span> 時間與 False Positive<span class="gloss">（誤報）</span>；核心不是數量，而是要控制哪些 Failure Mode<span class="gloss">（失敗模式）</span>。</span><span class="c0-ans">第 1 章</span></li>
+        <li><span><b>解法：</b>從風險反推控制：Regression<span class="gloss">（回歸問題）</span>→Test<span class="gloss">（測試）</span>；Architecture Drift<span class="gloss">（架構漂移）</span>→Architecture Test；Security<span class="gloss">（資安）</span>→SAST；Breaking Change<span class="gloss">（破壞性變更）</span>→Compatibility Check<span class="gloss">（相容性檢查）</span>。採 Risk<span class="gloss">（風險）</span> → Control<span class="gloss">（控制）</span> → Checker。</span><span class="c0-ans">第 2 章</span></li>
+        <li><span><b>AI 時代差異：</b>Agent<span class="gloss">（AI 代理）</span> 可高速、跨大量檔案修改，因此原本靠工程師記得的規則，更需要變成機器強制。</span><span class="c0-ans">第 3、4 章</span></li>
+      </ul>
+    </blockquote>
+    <div class="thesis c0-keep"><span class="c0-answer">我的答案</span>Checker 要幾道：最少要放幾道由<b>風險</b>決定，最多能放幾道由<b>注意力</b>決定，中間的增減靠<b>資料</b>調整。</div>
+  </div>
+  <aside class="notes">
+    <p>這是讀書會給的題目，四句原文照抄，右邊是我在哪一章回答。</p>
+    <p>第一句問要多少、是不是越多越好，第 1、2、5 章會回答。第二句的三種成本，我都付過，在第 1 章。第三句是從風險反推，在第 2 章。第四句說靠工程師記得的規則，要變成機器強制，在第 3、4 章。</p>
+    <p>我的答案先放在最下面：最少放幾道看風險，最多放幾道看注意力，中間靠資料調整。</p>
+    <p>接下來我照自己踩過的順序講。一開始，我跟大家一樣，覺得人看得少，那就多找幾家 AI 來 review。</p>
+  </aside>
+</section>
+
+<!-- slide-file: 02-more.html -->
+<!-- 第 1 章｜多找幾家 AI 來 review 就好？（P4–P7）。2026-10-29 照故事線改寫：每頁一個案例，先講背景。數字與背景來源：research/github-evidence.md §0（第 4、6、7 點）、§3.3、§5.1、故事卡 A–C、附錄 A；research/claude-code-evidence.md 卡 1、卡 2、卡 4、卡 10、§2.5、§2.6（agentRules 第 7 條）、§5.1。PR 一律只說「某個 PR」、不放連結。 -->
+<style>
+  /* 第 1 章專用樣式：class 一律加 c2- 前綴 */
+
+  /* P4、P6、P7：標題下面那一行案例背景 */
+  .c2-ctx { margin: 0; color: var(--muted, #5d687b); font-size: 22px; line-height: 1.45; }
+
+  /* P4：四家 reviewer 的低重疊示意（圓面積＝則數，重疊位置為示意） */
+  .grid.cols-2.c2-p6 { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: center; }
+  .c2-venn { margin: 0; }
+  .c2-venn svg { display: block; width: 100%; max-width: 340px; height: auto; margin: 0 auto; }
+  .c2-venn .c2-set { fill: var(--agent, #6d28d9); fill-opacity: .12; stroke: var(--agent, #6d28d9); stroke-opacity: .5; stroke-width: 1.5; }
+  .c2-venn .c2-nm { fill: var(--ink, #172033); font-size: 22px; font-weight: 700; text-anchor: middle; }
+  .c2-venn .c2-ct { fill: var(--muted, #5d687b); font-size: 18px; text-anchor: middle; }
+  .c2-venn figcaption { margin: 6px 0 0; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.5; text-align: center; }
+
+  /* P5：三種成本三欄 */
+  .c2-costs { align-items: stretch; }
+  .c2-costs .card { display: flex; flex-direction: column; gap: 8px; }
+  .c2-costs .c2-it { margin: 0; color: var(--ink, #172033); font-size: 20px; line-height: 1.4; }
+  .c2-costs .c2-it b { display: block; font-size: 26px; line-height: 1.2; }
+  /* 維護欄的小長條：測試（機器色）對產品程式（灰），同一把尺 0–7,533 行 */
+  .c2-costs .c2-mb { margin: 0; }
+  .c2-costs .c2-mb-t { margin: 2px 0 1px; color: var(--muted, #5d687b); font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .c2-costs .c2-mb-r { display: grid; grid-template-columns: 58px 1fr 60px; gap: 8px; align-items: center; margin: 2px 0; font-size: 18px; line-height: 1.25; }
+  .c2-costs .c2-mb-r i { display: block; width: calc(var(--v) * 100%); height: 14px; border-radius: 0 4px 4px 0; background: #9aa3b2; }
+  .c2-costs .c2-mb-r.c2-test i { background: var(--machine, #0f766e); }
+  .c2-costs .c2-mb-r b { text-align: right; font-variant-numeric: tabular-nums; }
+  .c2-costs .c2-mb-cap { margin: 4px 0 0; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.4; }
+  .c2-foot { margin: 0; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.5; }
+  .c2-foot .reading { margin-right: 8px; }
+
+  /* P6：兩個故事的小時間軸 */
+  .c2-story .c2-steps { margin: 8px 0 0; padding: 0; list-style: none; }
+  .c2-story .c2-steps li { position: relative; margin: 0; padding: 0 0 10px 26px; color: var(--ink, #172033); font-size: 20px; line-height: 1.4; }
+  .c2-story .c2-steps li::before { content: ""; position: absolute; left: 4px; top: 10px; width: 10px; height: 10px; border-radius: 50%; background: var(--muted, #5d687b); }
+  .c2-story .c2-steps li::after { content: ""; position: absolute; left: 8px; top: 22px; bottom: 0; width: 2px; background: var(--line, #dfe5ef); }
+  .c2-story .c2-steps li:last-child { padding-bottom: 0; }
+  .c2-story .c2-steps li:last-child::after { display: none; }
+  .c2-story .c2-steps li.c2-hit::before { background: var(--danger, #b42318); }
+  .c2-story .c2-steps li.c2-fix::before { background: var(--good, #13795b); }
+  .c2-story .c2-steps b { font-size: 24px; }
+  .c2-story .c2-rule { margin: 12px 0 0; padding: 8px 12px; border-radius: 10px; background: var(--good-soft, #eaf8f3); color: var(--good, #13795b); font-size: 20px; font-weight: 700; line-height: 1.4; }
+
+  /* P7：工具目錄那個 PR（四步）；用自己的 flex，確保四個節點排成一列 */
+  .flow.c2-chain { display: flex; align-items: stretch; gap: 6px; }
+  .flow.c2-chain > .node { flex: 1 1 0; min-width: 0; font-size: 20px; line-height: 1.35; }
+  .flow.c2-chain > .arrow { flex: 0 0 auto; align-self: center; }
+  .flow.c2-chain > .node small { font-size: 18px; }
+  .flow.c2-chain > .node.c2-bad { border-color: var(--danger, #b42318); background: var(--danger-soft, #fff0ee); }
+  .c2-nogo { padding: 12px 20px; }
+  .c2-nogo > strong:first-child { margin-bottom: 0; }
+  /* 2026-10-29 加中文翻譯後騰空間：字寬加 5% 也不會切到底 */
+  .slide-body.c2-catalog-body { gap: 18px; }
+</style>
+
+<section class="slide" id="p4" data-chapter="第 1 章｜多找幾家 AI 來 review 就好？" data-seconds="75">
+  <div class="slide-body">
+    <div class="eyebrow">一開始的直覺：人看得少，就多找幾家 AI 來 review</div>
+    <h2>多一家，真的多抓到東西</h2>
+    <p class="c2-ctx">3 月，某個 iOS SDK<span class="gloss">（開發套件）</span> 專案的第一版，功能一次開成一個 PR。那時我在比較幾家 AI reviewer<span class="gloss">（AI 審查者）</span>，同一波有 4 家在審。</p>
+    <div class="grid cols-2 c2-p6">
+      <figure class="c2-venn">
+        <svg viewBox="50 5 400 350" role="img" aria-labelledby="c2-venn-t c2-venn-d">
+          <title id="c2-venn-t">同一波 4 家 AI reviewer 的意見：重疊很少</title>
+          <desc id="c2-venn-d">某個 iOS SDK 專案的 PR，同一波共 30 則意見：Copilot 11 則、CodeRabbit 9 則、Greptile 8 則、Codex 2 則。圓的面積依則數畫；圓和圓的重疊位置是示意。</desc>
+          <circle class="c2-set" cx="150" cy="118" r="85"></circle>
+          <circle class="c2-set" cx="330" cy="113" r="100"></circle>
+          <circle class="c2-set" cx="210" cy="255" r="90"></circle>
+          <circle class="c2-set" cx="372" cy="240" r="43"></circle>
+          <text class="c2-nm" x="140" y="112">Greptile</text>
+          <text class="c2-ct" x="140" y="138">8 則</text>
+          <text class="c2-nm" x="340" y="100">Copilot</text>
+          <text class="c2-ct" x="340" y="126">11 則</text>
+          <text class="c2-nm" x="205" y="268">CodeRabbit</text>
+          <text class="c2-ct" x="205" y="294">9 則</text>
+          <text class="c2-nm" x="376" y="238">Codex</text>
+          <text class="c2-ct" x="376" y="262">2 則</text>
+        </svg>
+        <figcaption>同一波 30 則意見<br>圓越大，意見越多；重疊的位置是示意</figcaption>
+      </figure>
+      <div class="stack">
+        <div class="stat"><b>4 / 24</b><span>約 24 個不同的問題，只有 4 個被兩家以上抓到</span><em class="src estimated">估計</em></div>
+        <div class="stat"><b>2 個 P0</b><span>use-after-free<span class="gloss">（釋放後使用）</span>、JS injection<span class="gloss">（JS 注入攻擊）</span>：都只有一家抓到</span><em class="src estimated">估計</em></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>我自己就這樣試過，確實有幫助。</p>
+    <p>3 月我在做某個 iOS SDK 專案的第一版，功能一次開成一個 PR。那時候我在比較幾家 AI reviewer，這個 PR 同一波就有 4 家在審，一共 30 則意見。左邊的圓，大小是每家的意見數，重疊的位置是示意。</p>
+    <p>我把這 30 則一則一則去歸類，大概是 24 個不同的問題，只有 4 個是兩家以上都有抓到。最嚴重的兩個 P0<span class="gloss">（最高優先級）</span>，use-after-free 跟 JS injection，都只有一家看到。也就是說，那一波如果少了那一家，這兩個 P0 可能就沒人發現。</p>
+    <p>這兩個數字標估計，因為是我自己歸類的。今天沒標的數字都是實測，有標的才是估計，或是別人的說法。</p>
+    <p>所以題目問是不是越多越好，單看抓問題，多一家真的會多抓到東西。可是每多一家，也多一份成本。</p>
+  </aside>
+</section>
+
+<section class="slide" id="p5" data-chapter="第 1 章｜多找幾家 AI 來 review 就好？" data-seconds="80">
+  <div class="slide-body">
+    <div class="eyebrow">可是每多一道，就多一份成本</div>
+    <h2>題目說的三種成本，我都付過</h2>
+    <div class="grid cols-3 c2-costs">
+      <div class="card">
+        <strong>維護成本</strong>
+        <p class="c2-it">自己做的 Checker<span class="gloss">（檢查機制）</span>，像測試、review agent<span class="gloss">（審查用的 AI 代理）</span>、skill<span class="gloss">（技能）</span>，都要定期維護</p>
+        <div class="c2-mb" role="img" aria-label="程式行數：board-sync 測試 4,494 行、實作 2,656 行；AI Board 測試 7,533 行、產品碼 6,608 行">
+          <p class="c2-mb-t">board-sync<span class="gloss">（同步看板的工具）</span></p>
+          <div class="c2-mb-r c2-test" style="--v:.597"><span>測試</span><i></i><b>4,494</b></div>
+          <div class="c2-mb-r" style="--v:.353"><span>實作</span><i></i><b>2,656</b></div>
+          <p class="c2-mb-t">AI Board<span class="gloss">（團隊的 AI 開發流程看板）</span></p>
+          <div class="c2-mb-r c2-test" style="--v:1"><span>測試</span><i></i><b>7,533</b></div>
+          <div class="c2-mb-r" style="--v:.877"><span>產品碼</span><i></i><b>6,608</b></div>
+          <p class="c2-mb-cap">測試也是 Checker：看行數，測試比產品程式還多</p>
+        </div>
+      </div>
+      <div class="card">
+        <strong>Pipeline<span class="gloss">（管線）</span> 與等待時間</strong>
+        <p class="c2-it"><b>10 天、9 波</b>剛剛那個 PR，前後 5 家 reviewer<span class="gloss">（審查者）</span>，光是修正就 9 波</p>
+        <p class="c2-it">第 5 波的修正，還改出一個新的 P0<span class="gloss">（最高優先級）</span></p>
+      </div>
+      <div class="card">
+        <strong>False Positive<span class="gloss">（誤報）</span> 與雜訊</strong>
+        <p class="c2-it"><b>12.5%</b>自建 review<span class="gloss">（審查）</span> 跑 232 次，說「0 項問題」的比例</p>
+        <p class="c2-it">幾乎每次都會挑出東西，什麼時候停，只能人決定</p>
+      </div>
+    </div>
+    <p class="c2-foot"><span class="reading">R4 The Practical Test Pyramid</span>“Every single test in your test suite is additional baggage”（Ham Vocke，2018）</p>
+  </div>
+  <aside class="notes">
+    <p>這個成本，題目第二句也寫了：維護成本、Pipeline 時間跟 False Positive。這三種我都付過。</p>
+    <p>先講維護。自己做的 Checker，像測試、review agent、skill，都要定期維護。測試也是 Checker：board-sync 是我做來讓 AI 更新看板的 skill，測試四千四百多行，實作才兩千六百多行；我們的 AI Board 看板也一樣，測試比產品碼還多。測試金字塔那篇就說，每一個測試都是額外的負擔。review agent 跟 skill 也要有人一直顧。</p>
+    <p>再來是時間。剛剛那個 PR，同一波 4 家，前後一共 5 家 reviewer，光修正就 9 波、修了 136 項、拖了 10 天，第 5 波的修正還改出一個新的 P0。</p>
+    <p>最後是誤報。我們自建的 Claude review 每個 PR 都會跑，在我的 PR 上跑了 232 次，只有一成二說沒問題。它幾乎每次都會挑出東西，什麼時候可以停，只能由人決定。</p>
+    <p>而且意見一多，還有一個麻煩：重要的那一則，反而會被淹掉。</p>
+  </aside>
+</section>
+
+<section class="slide" id="p6" data-chapter="第 1 章｜多找幾家 AI 來 review 就好？" data-seconds="75">
+  <div class="slide-body">
+    <div class="eyebrow">意見一多，重要的反而被淹掉</div>
+    <h2>多一家 reviewer，多出來的兩個麻煩</h2>
+    <p class="c2-ctx">5 月，同一個 iOS 專案的 App：把一個太大的登入畫面拆開，4 家 reviewer<span class="gloss">（審查者）</span> 一起審</p>
+    <div class="grid cols-2">
+      <div class="card c2-story">
+        <strong>被淹掉：只有一家抓到的 Major<span class="gloss">（重大）</span></strong>
+        <ol class="c2-steps">
+          <li>4 家裡只有 1 家指出：按鍵盤 return<span class="gloss">（Enter 鍵）</span> 會送出第二次登入</li>
+          <li>那一輪只處理了另一家的意見，這則被漏掉</li>
+          <li class="c2-hit"><b>66.5 小時</b>後才修</li>
+          <li>修好之前，自建 Claude review<span class="gloss">（審查）</span> 在這個 PR 跑了 <b>16 次</b>，一次都沒提到</li>
+        </ol>
+      </div>
+      <div class="card c2-story">
+        <strong>一直誤報：同一個 Warning<span class="gloss">（警告）</span></strong>
+        <ol class="c2-steps">
+          <li class="c2-hit">同一個 Warning 被報了 <b>4 次</b></li>
+          <li>寫長文證明是誤報，連 Claude 自己都承認了</li>
+          <li>下一輪，照樣再報一次</li>
+          <li class="c2-fix">改結構：拿掉容易混淆的那層包裝，寫入只走一個入口，就不再出現</li>
+        </ol>
+        <p class="c2-rule">我的規則：同一處被 flag<span class="gloss">（標記）</span> 兩次，就改結構</p>
+      </div>
+    </div>
+    <div class="thesis">每多一家 reviewer，就多一堆意見要追</div>
+  </div>
+  <aside class="notes">
+    <p>這是同一個專案的另一個 PR。5 月我在 App 這邊，把一個太大的登入畫面拆開。這個 PR 有 4 家 reviewer 一起審，來回改了很多輪。</p>
+    <p>第一件事是被淹掉。按鍵盤 return 會送出第二次登入，這個 Major，4 家裡只有 1 家抓到。那一輪我們只處理了另一家的意見，這則就漏掉了，66.5 小時後才修。修好之前，自建的 Claude review 在這個 PR 跑了 16 次，一次都沒提到。</p>
+    <p>第二件事是一直誤報。同一個 Warning 報了 4 次，我們寫長文證明是誤報，連 Claude 都承認了，下一輪照報。後來把那層容易混淆的包裝拿掉，寫入只走一個入口，它才停。這變成我的規則：同一處被 flag 兩次，就改結構。</p>
+    <p>所以我覺得，每多一家 reviewer，就多一堆意見要追。那 reviewer 叫你加的檢查，是不是都該加？</p>
+  </aside>
+</section>
+
+<section class="slide" id="p7" data-chapter="第 1 章｜多找幾家 AI 來 review 就好？" data-seconds="70">
+  <div class="slide-body c2-catalog-body">
+    <div class="eyebrow">而且 reviewer 只會叫你加，不會叫你拿掉</div>
+    <h2>照 reviewer 加的一道檢查，差點讓工具目錄停更</h2>
+    <p class="c2-ctx">AI Board 是我們團隊的 AI 開發流程看板；看板上的 skill<span class="gloss">（技能）</span>，要在工具目錄裡找得到才算能用。<br>這個 PR 要讓工具目錄每小時自動更新。</p>
+    <div class="flow c2-chain">
+      <div class="node">跑了 6 輪 review<span class="gloss">（審查）</span><small>一直被要求加嚴格檢查</small></div>
+      <div class="arrow">→</div>
+      <div class="node">第 4、5 輪各加一道<small>合併上線</small></div>
+      <div class="arrow">→</div>
+      <div class="node c2-bad">當天發現會撞名<small>有人照流程登記一支工具，<br>就每小時失敗、整份停更</small></div>
+      <div class="arrow">→</div>
+      <div class="node">被另一個 agent<span class="gloss">（AI 代理）</span> 攔下<small>還沒發生；<br>當晚改成「以掃描為準、<br>略過手寫並警告」</small></div>
+    </div>
+    <div class="callout good c2-nogo"><strong>同一個 PR，我也刻意不加 3 道檢查，因為都會誤報</strong></div>
+    <div class="thesis">到這裡的答案 1：Checker<span class="gloss">（檢查機制）</span> 不是越多越好，每加一道都有成本，還可能出事</div>
+  </div>
+  <aside class="notes">
+    <p>我就有一次照 reviewer<span class="gloss">（審查者）</span> 的意見加檢查，差點出事。</p>
+    <p>AI Board 是我們團隊的 AI 開發流程看板。看板上的 skill，要在工具目錄裡找得到才算能用；目錄裡有自動掃描出來的，也有人手寫的條目。這個 PR 要讓工具目錄每小時自動更新。</p>
+    <p>它跑了 6 輪 review，reviewer 一直要加嚴格檢查，第 4、5 輪各加了一道，就合併了。第 5 輪那道是：手寫條目蓋過掃描結果，就失敗。合併當天發現它跟登記流程衝突：有人照流程登記一支工具，下次排程就撞名，之後每小時失敗、整份目錄停更。還好那時還沒人登記，另一個 agent 先攔下來，當晚就改掉。</p>
+    <p>我也刻意決定有 3 道不加，因為都會誤報。決定不加，也要有人負責。</p>
+    <p>所以到這裡的答案 1：Checker 不是越多越好，每加一道都有成本，還可能出事。那到底該加哪些？題目給的解法，是從風險反推。</p>
+  </aside>
+</section>
+
+<!-- slide-file: 03-risk.html -->
+<!-- 第 2 章｜那就從風險決定（P8–P11）。2026-10-29 照故事線改寫：每頁一個重點、最多一個案例，先講背景。數字與背景來源：research/github-evidence.md §0（第 1、5 點）、§2.2–2.3、§3.1、故事卡 D；research/claude-code-evidence.md §2.2–2.6、§5.1；research/readings-digest.md §2.E、§3、§6.3。 -->
+<style>
+  /* 第 2 章專用樣式：class 一律加 c3- 前綴 */
+  .c3-head { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .c3-head .legend { flex: 0 0 auto; margin: 0; }
+  .c3-head .eyebrow .reading { margin-left: 10px; }
+
+  /* P8：題目的四種風險，各配什麼 Checker、我們現況 */
+  .c3-rcc table { table-layout: fixed; }
+  .c3-rcc td { vertical-align: middle; }
+  .c3-rcc td b { color: var(--ink, #172033); }
+  .c3-rcc td small { display: block; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.3; }
+  .c3-rcc .c3-now .tag { margin-right: 8px; }
+  .c3-foot { margin: 0; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.5; }
+  .c3-foot .reading { margin-right: 8px; }
+
+  /* P9：三層，加一個從 AI 那層搬到機器那層的例子 */
+  .c3-tiers .card p { color: var(--ink, #172033); }
+  .c3-case p + p { margin-top: 6px; }
+  .c3-lv { display: inline-block; min-width: 5.4em; margin-right: 12px; padding: 1px 10px; border-left: 5px solid; border-radius: 6px; font-size: 18px; font-weight: 700; line-height: 1.4; vertical-align: 1px; }
+  .c3-lv.c3-a { border-color: var(--agent, #6d28d9); background: #f3edff; color: var(--agent, #6d28d9); }
+  .c3-lv.c3-m { border-color: var(--machine, #0f766e); background: #e6f6f4; color: var(--machine, #0f766e); }
+
+  /* P10：流程地圖（從實作到上線四站） */
+  .slide-body.c3-tight { gap: 16px; } /* 留餘裕：字型算得比較寬的瀏覽器也不會切到底 */
+  .c3-map { display: grid; grid-template-columns: 132px repeat(4, minmax(0, 1fr)); gap: 6px 18px; align-items: stretch; margin: 0; }
+  .c3-map .c3-corner { display: flex; align-items: center; justify-content: flex-end; }
+  .c3-map .c3-stop { position: relative; padding: 7px 4px; border: 2px solid #cbd5f5; border-radius: 12px; background: var(--paper, #fff); font-size: 22px; font-weight: 700; line-height: 1.2; text-align: center; }
+  .c3-map .c3-stop:not(.c3-stop-end)::after { content: "→"; position: absolute; top: 50%; right: -17px; transform: translateY(-50%); color: var(--primary, #3157d5); font-size: 18px; font-weight: 800; }
+  .c3-map .c3-rowh { display: flex; flex-direction: column; justify-content: center; gap: 1px; color: var(--ink, #172033); font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .c3-map .c3-rowh small { color: var(--muted, #5d687b); font-size: 18px; font-weight: 400; }
+  .c3-map .c3-cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 4px; border-radius: 10px; background: #f8faff; text-align: center; font-size: 18px; line-height: 1.3; }
+  .c3-map .c3-cell small { color: var(--muted, #5d687b); font-size: 18px; }
+  .c3-pips { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; font-weight: 700; }
+  .c3-pips i { display: block; width: 14px; height: 14px; border-radius: 50%; }
+  .c3-pips i.c3-h { background: var(--human, #c2410c); }
+  .c3-pips i.c3-a { background: var(--agent, #6d28d9); }
+  .c3-chip { display: block; width: 100%; padding: 3px 6px; border-left: 5px solid; border-radius: 6px; font-size: 18px; line-height: 1.3; text-align: left; }
+  .c3-chip.c3-h { border-color: var(--human, #c2410c); background: #fff1e7; }
+  .c3-chip.c3-a { border-color: var(--agent, #6d28d9); background: #f3edff; }
+  .c3-chip.c3-m { border-color: var(--machine, #0f766e); background: #e6f6f4; }
+  .c3-none { color: #9aa3b2; font-size: 20px; }
+  .c3-bottom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; margin: 0; align-items: stretch; }
+  .c3-bottom .callout { margin: 0; padding: 12px 18px; }
+  .c3-bottom .thesis { display: flex; align-items: center; margin: 0; }
+  .c3-gaps ul { margin: 6px 0 0; padding-left: 1.2em; }
+  .c3-gaps li { margin: 0; font-size: 22px; line-height: 1.4; }
+
+  /* P11：看板前後對照（每個點＝一個節點；藍點是檢核點） */
+  .c3-ba { display: grid; grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1.2fr); gap: 12px; align-items: stretch; }
+  .c3-ba-arrow { align-self: center; color: var(--primary, #3157d5); font-size: 34px; font-weight: 800; text-align: center; }
+  .c3-ver { display: flex; flex-direction: column; gap: 4px; padding-top: 16px; padding-bottom: 16px; }
+  .c3-dots { display: grid; grid-template-columns: repeat(17, 11px); gap: 3px 4px; }
+  .c3-dots i { display: block; width: 11px; height: 11px; border-radius: 50%; background: #cfd5df; }
+  .c3-dots i.c3-c { background: var(--primary, #3157d5); }
+  .c3-ver .c3-ver-n { margin: 0; color: var(--ink, #172033); font-size: 22px; line-height: 1.4; }
+  .c3-ver .c3-ver-n b { font-size: 28px; }
+  .c3-ver .c3-k::before { content: ""; display: inline-block; width: 12px; height: 12px; margin: 0 6px 0 2px; border-radius: 50%; background: var(--primary, #3157d5); vertical-align: 3px; }
+  .c3-ver ul { margin: 0; padding-left: 1.1em; }
+  .c3-ver li { margin: 0; color: var(--ink, #172033); font-size: 20px; line-height: 1.4; }
+  /* 2026-10-29 加中文翻譯後騰空間：字寬加 5% 也不會切到底 */
+  .c3-rcc td, .c3-rcc th { padding: 7px 12px; }
+</style>
+
+<section class="slide" id="p8" data-chapter="第 2 章｜那就從風險決定" data-seconds="70">
+  <div class="slide-body">
+    <div class="eyebrow">那該加哪些？題目的解法：從風險反推</div>
+    <h2>先問會壞在哪，再決定放什麼</h2>
+    <div class="table-wrap c3-rcc">
+      <table>
+        <colgroup><col style="width:24%"><col style="width:30%"><col style="width:14%"><col style="width:32%"></colgroup>
+        <thead>
+          <tr><th>風險</th><th>Checker</th><th>放哪一站</th><th>我們現況</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Regression<span class="gloss">（回歸問題）</span></b><small>改了 A 壞了 B</small></td>
+            <td><b>Unit Test<span class="gloss">（單元測試）</span>、Integration Test<span class="gloss">（整合測試）</span></b><small>單一邏輯、跨邊界</small></td>
+            <td>實作、PR</td>
+            <td class="c3-now"><span class="tag medium">部分</span>iOS 只在本機跑，<br>端到端靠手動 smoke<span class="gloss">（冒煙測試）</span></td>
+          </tr>
+          <tr>
+            <td><b>Architecture Drift<span class="gloss">（架構漂移）</span></b><small>結構慢慢歪掉</small></td>
+            <td><b>Architecture Test<span class="gloss">（架構測試）</span></b><small>依賴方向、分層</small></td>
+            <td>實作＋定期</td>
+            <td class="c3-now"><span class="tag low">幾乎沒有</span>只有 parity<span class="gloss">（行為一致）</span> 測試</td>
+          </tr>
+          <tr>
+            <td><b>Security<span class="gloss">（資安）</span></b><small>漏洞、秘密外洩</small></td>
+            <td><b>SAST<span class="gloss">（靜態安全掃描）</span></b><small>另配 secret、套件掃描</small></td>
+            <td>PR</td>
+            <td class="c3-now"><span class="tag low">沒有</span>三種掃描都沒有</td>
+          </tr>
+          <tr>
+            <td><b>Breaking Change<span class="gloss">（破壞性變更）</span></b><small>介面改壞別人</small></td>
+            <td><b>Compatibility Check<span class="gloss">（相容性檢查）</span></b><small>契約測試</small></td>
+            <td>PR＋上線前</td>
+            <td class="c3-now"><span class="tag medium">部分</span>只有看板的同步協定有</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="c3-foot"><span class="reading">R3 Fitness function</span>從最在乎的屬性推出要放的檢查，定期回頭看</p>
+  </div>
+  <aside class="notes">
+    <p>從風險反推，就是先問這裡最可能壞在哪，再決定放什麼 Checker<span class="gloss">（檢查機制）</span>、放在哪一站。題目舉了四種風險，我拿我們現在的狀況一個一個對。</p>
+    <p>Regression 是改了 A 壞了 B，靠 Unit 跟 Integration Test。我們 iOS 的測試只在本機跑，端到端靠我自己手動 smoke。Architecture Drift 是結構慢慢歪掉，要靠架構測試守依賴方向，我們只有 AI Board 那幾支 parity 測試勉強算。Security 要 SAST，再配 secret 跟套件掃描，這三種我們都沒有。Breaking Change 靠契約測試，只有 board-sync 跟 AI Board 之間的同步協定有。</p>
+    <p>所以最右邊這欄，老實說一個綠的都沒有。Fitness function<span class="gloss">（適應度函數）</span> 那篇講的也是這個順序：先排出大家最在乎的屬性，再推出要放哪些檢查，之後定期回頭看。</p>
+    <p>可是光把風險排出來還不夠，我還會再問一句：這種錯，誰抓得到？</p>
+  </aside>
+</section>
+
+<section class="slide" id="p9" data-chapter="第 2 章｜那就從風險決定" data-seconds="60">
+  <div class="slide-body">
+    <div class="c3-head">
+      <div class="eyebrow">再問：這種錯，誰抓得到？<span class="reading">R2 Harness engineering</span></div>
+      <div class="legend"><span class="human">人</span><span class="agent">agent</span><span class="machine">機器</span></div>
+    </div>
+    <h2>機器抓得到的、AI 抓得到一部分的、都抓不穩的</h2>
+    <div class="grid cols-3 c3-tiers">
+      <div class="card machine">
+        <strong>機器可靠抓到</strong>
+        <p>重複程式碼、缺測試、架構漂移<br>便宜又確定，每次改都能跑</p>
+      </div>
+      <div class="card agent">
+        <strong>AI 只抓到一部分</strong>
+        <p>語意重複、暴力修法、過度設計<br>貴，每次結果還可能不同</p>
+      </div>
+      <div class="card human">
+        <strong>兩者都抓不穩</strong>
+        <p>誤解需求、做了不需要的功能<br>只能靠人</p>
+      </div>
+    </div>
+    <div class="callout c3-case">
+      <strong>我的例子：AI Board 補強同步的一個 PR</strong>
+      <p><span class="c3-lv c3-a">AI 那層</span>同一個 commit<span class="gloss">（提交）</span> 跑兩次 review<span class="gloss">（審查）</span>：一次抓到真的並發 Critical<span class="gloss">（嚴重）</span>，5 分鐘後說 0 項</p>
+      <p><span class="c3-lv c3-m">機器那層</span>後來把它寫成測試，之後每次都會擋</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>誰抓得到這件事，Harness engineering 那篇把 coding agent<span class="gloss">（AI 代理）</span> 常犯的錯分成三層。第一層機器就能可靠抓到，像重複程式碼、缺測試，便宜又確定。第二層 AI 只抓得到一部分，像暴力修法、過度設計，又貴又不穩。第三層兩邊都抓不穩，像誤解需求、做了不需要的功能，這種只能靠人。</p>
+    <p>第二層我自己踩過。AI Board 之前出過事，舊的狀態把新加的內容整份蓋掉，所以我開了一個 PR 補強同步。同一個 commit，我們自建的 Claude review 跑了兩次，第一次抓到一個真的 Critical：同時有兩筆修改進來，其中一筆會被悄悄蓋掉。5 分鐘後第二次跑，說 0 項。</p>
+    <p>AI 這次抓到算是碰巧，所以後來把它寫成測試，從 AI 那層搬到機器那層，之後每次都會擋。那這三層套回我們自己的流程，每一站到底有什麼？</p>
+  </aside>
+</section>
+
+<section class="slide" id="p10" data-chapter="第 2 章｜那就從風險決定" data-seconds="70">
+  <div class="slide-body c3-tight">
+    <div class="c3-head">
+      <div class="eyebrow">套回我們自己的流程：從實作到上線</div>
+      <div class="legend"><span class="human">人</span><span class="agent">agent</span><span class="machine">機器</span></div>
+    </div>
+    <h2>AI Board 上的流程：每一站有什麼、缺什麼</h2>
+    <div class="c3-map">
+      <div class="c3-corner"></div>
+      <div class="c3-stop">實作</div>
+      <div class="c3-stop">PR</div>
+      <div class="c3-stop">驗收</div>
+      <div class="c3-stop c3-stop-end">上線</div>
+
+      <div class="c3-rowh">看板檢核點<small>人 6、agent<span class="gloss">（AI 代理）</span> 2</small></div>
+      <div class="c3-cell"><span class="c3-pips" aria-label="人 3 個"><i class="c3-h"></i><i class="c3-h"></i><i class="c3-h"></i></span><small>RD<span class="gloss">（研發）</span> 檢查、畫面</small></div>
+      <div class="c3-cell"><span class="c3-pips" aria-label="agent 1 個、人 1 個"><i class="c3-a"></i><i class="c3-h"></i></span><small>agent 審、人合併</small></div>
+      <div class="c3-cell"><span class="c3-pips" aria-label="agent 1 個、人 2 個"><i class="c3-a"></i><i class="c3-h"></i><i class="c3-h"></i></span><small>找 bug<span class="gloss">（錯誤）</span>、審測試</small></div>
+      <div class="c3-cell"><span class="c3-none">—</span><small>沒有檢核點</small></div>
+
+      <div class="c3-rowh">實際在跑的<small>不分誰觸發</small><small>多半只是建議</small></div>
+      <div class="c3-cell"><span class="c3-chip c3-m">測試靠 AI 跑</span><span class="c3-chip c3-a">提交前自審</span></div>
+      <div class="c3-cell"><span class="c3-chip c3-a">AI reviewer<span class="gloss">（AI 審查者）</span></span><span class="c3-chip c3-m">CI：部分 repo<span class="gloss">（程式庫）</span></span></div>
+      <div class="c3-cell"><span class="c3-chip c3-h">手動 smoke<span class="gloss">（冒煙測試）</span></span></div>
+      <div class="c3-cell"><span class="c3-chip c3-m">server<span class="gloss">（伺服器）</span> 端守門</span><span class="c3-chip c3-h">人工監看</span></div>
+    </div>
+    <div class="c3-bottom">
+      <div class="callout danger c3-gaps">
+        <strong>還缺的</strong>
+        <ul>
+          <li>沒有 SAST<span class="gloss">（靜態安全掃描）</span></li>
+          <li>secret scan<span class="gloss">（金鑰外洩掃描）</span>、Dependabot<span class="gloss">（相依套件更新工具）</span> 全關</li>
+          <li>7 個預設分支都沒有保護規則</li>
+          <li>某個 iOS 專案沒有 build<span class="gloss">（建置）</span>、test CI</li>
+        </ul>
+      </div>
+      <div class="thesis"><span>最後把關的還是我自己，<br>86 個 PR 只有 9 個有人工 approve<span class="gloss">（核准）</span></span></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>知道哪一層抓得到之後，我把它套回前面提過的 AI Board，也就是我們自己的流程。看板上要停下來給人或 agent 檢查的地方，叫檢核點。這張只取實作到上線這四站。橘色是人，紫色是 agent，綠色是機器。</p>
+    <p>上面一排是看板上設計的檢核點，人有 6 個，agent 只有 2 個。下面一排是實際在跑的，不管誰觸發。實作靠 AI 自己跑測試、提交前自己審；PR 最熱鬧，最多有 5 家 AI reviewer；驗收是我自己手動 smoke；上線有 server 端守門，加上我自己盯著。這些大部分只是建議。</p>
+    <p>左下是還缺的：沒有 SAST，secret scan 跟 Dependabot 都關著，7 個預設分支都沒有保護規則，某個 iOS 專案連 build、test 的 CI 都沒有。所以最後把關的還是我自己，86 個 PR 只有 9 個有人按 approve。</p>
+    <p>這些檢核點，也不是一開始就有的。</p>
+  </aside>
+</section>
+
+<section class="slide" id="p11" data-chapter="第 2 章｜那就從風險決定" data-seconds="40">
+  <div class="slide-body">
+    <div class="eyebrow">所以我的看板，從全自動改成把人加回來</div>
+    <h2>第一版讓 AI 取代人工複審和 QA，後來我改掉了</h2>
+    <div class="c3-ba">
+      <div class="card c3-ver">
+        <strong>6/10 第一版「full-auto」</strong>
+        <div class="c3-dots" role="img" aria-label="45 個節點，沒有一個是檢核點"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="c3-ver-n"><b>45</b> 個節點、<b>0</b> 個檢核點</p>
+        <ul>
+          <li>人只出現在 7 個「例外升級」節點</li>
+        </ul>
+      </div>
+      <div class="c3-ba-arrow" aria-hidden="true">→</div>
+      <div class="card c3-ver">
+        <strong>10/27 這一版</strong>
+        <div class="c3-dots" role="img" aria-label="102 個節點，其中 19 個是檢核點"><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i class="c3-c"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="c3-ver-n"><b>102</b> 個節點、<span class="c3-k"><b>19</b> 個檢核點</span></p>
+        <ul>
+          <li>agent<span class="gloss">（AI 代理）</span> 檢 3 次不過就交給人</li>
+          <li>人工核准綁產物版本，產物一改就失效</li>
+        </ul>
+      </div>
+    </div>
+    <div class="thesis">到這裡的答案 2：最少要放幾道，由風險決定</div>
+  </div>
+  <aside class="notes">
+    <p>6 月 10 號的第一版叫 full-auto<span class="gloss">（全自動）</span>，45 個節點、0 個檢核點，AI 取代人工複審，也取代 QA<span class="gloss">（品質保證）</span>，人只在出例外時出現。</p>
+    <p>10 月 27 號這版有 19 個檢核點。剛剛第三層那種機器和 AI 都抓不穩的錯，就要有人停下來看；放人還是放 agent，看風險。agent 檢查 3 次不過就交給人；人核准的是某一個版本，產物一改，核准就失效。</p>
+    <p>所以到這裡，我的第二個答案：最少要放幾道，由風險決定。可是檢核點和規則都寫了，AI 真的會照做嗎？</p>
+  </aside>
+</section>
+
+<!-- slide-file: 04-soft-hard.html -->
+<!-- 第 3 章｜規則寫了，AI 不一定照做（P12–P13）。數字來源：research/claude-code-evidence.md §5.1（skill 觸發次數、對話期間 135 天、使用者層級 hook 1 支）；research/github-evidence.md §0 第 3、4 點（自建 Claude review 232 次）；research/github-author-items.md（ai-context 裡有 code review 的 SOP）；research/readings-digest.md §2（Harness engineering）。P12 的規則原文、「只被索引檔提到」已對照本機檔案與 transcript。改版前的「執行層級階梯」那頁，併進 05-hard-rules.html 的第一頁（現在的 P14）。 -->
+<style>
+  /* 第 3 章專用樣式：class 一律加 c4- 前綴，只補版面，不改共用元件 */
+
+  /* P12：規則原文 vs 0 次 */
+  .c4-top { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px; align-items: stretch; }
+  .c4-sub { margin-top: 10px; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.5; }
+  .c4-hero { display: flex; flex-direction: column; justify-content: center; }
+  .c4-hero b { font-size: 96px; line-height: 1.05; }
+
+  /* P13：2×2（每格自己標座標，軸標怎麼畫都讀得懂） */
+  .c4-quad .cell { display: flex; flex-direction: column; gap: 6px; }
+  .c4-qhead { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+  .c4-qhead small { color: var(--muted, #5d687b); font-size: 18px; }
+  .c4-quad .c4-qwhat { color: var(--ink, #172033); font-size: 22px; font-weight: 700; line-height: 1.4; }
+  .c4-quad .c4-qex { font-size: 20px; line-height: 1.4; }
+  .c4-reading { font-size: 20px; line-height: 1.5; }
+  .c4-reading .reading { margin-right: 8px; }
+
+  /* 窄螢幕讀筆記：和共用的 .grid 一樣改成一欄（簡報模式與列印維持舞台排版） */
+  @media screen and (max-width: 760px) {
+    body:not(.mode-slides) .c4-top { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+
+<section class="slide" id="p12" data-chapter="第 3 章｜規則寫了，AI 不一定照做" data-seconds="90">
+  <div class="slide-body">
+    <div class="eyebrow">檢核點和規則都寫了，AI 會照做嗎？</div>
+    <h2>我寫了「必須執行、不得跳過」</h2>
+    <div class="spacer"></div>
+    <div class="c4-top">
+      <div>
+        <blockquote class="quote">每個實作階段完成後（或整體任務完成後），必須執行下列 skill，不得跳過<cite>我的實作紀律檔；「下列」指的是 verification-before-completion 和 requesting-code-review</cite></blockquote>
+        <p class="c4-sub">只有一份索引檔提到它，沒有任何專案的 AGENTS.md<span class="gloss">（給 AI 看的專案規則檔）</span> 或 CLAUDE.md 載入它</p>
+      </div>
+      <div class="stat c4-hero"><b>0 次</b><span>這兩個 skill<span class="gloss">（技能）</span> 在 135 天裡（6/16–10/28）被觸發的次數</span></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="thesis">寫在 markdown<span class="gloss">（純文字格式）</span> 裡的「必須」，還是軟規則</div>
+  </div>
+  <aside class="notes">
+    <p>會不會照做，我先講我自己的例子。</p>
+    <p>我在 ai-context<span class="gloss">（AI 工作脈絡資料夾）</span> 放了幾份寫給 AI 看的規則，像 code review<span class="gloss">（程式碼審查）</span> 的 SOP<span class="gloss">（標準作業程序）</span> 就在裡面。其中一份是實作紀律檔，講 AI 實作時要守的事，標題就寫「強制規則」。畫面上這條是說：每個實作階段做完，必須跑 verification-before-completion<span class="gloss">（完成前先驗證）</span> 跟 requesting-code-review<span class="gloss">（請人審查程式碼）</span>，不得跳過。一個是做完先驗證，一個是做完請 review。我的想法很簡單，AI 說做完之前，要先驗證過、也被 review 過。</p>
+    <p>寫得夠兇了吧？我把 135 天的對話紀錄翻過一遍，這兩個 skill 被觸發 0 次。原因是只有一份索引檔提到這份檔，沒有任何專案的 AGENTS.md 或 CLAUDE.md 會載入它，AI 根本沒讀到。上一章我們照風險決定要放哪些檢查，可是 AI 不跑，放了也等於沒放。</p>
+    <p>所以寫在 markdown 裡的「必須」，還是軟規則。就算 AI 讀到了，也不一定會照做。那它為什麼會略過？</p>
+  </aside>
+</section>
+
+<section class="slide" id="p13" data-chapter="第 3 章｜規則寫了，AI 不一定照做" data-seconds="90">
+  <div class="slide-body">
+    <div class="eyebrow">為什麼會略過：差在誰觸發、誰判定</div>
+    <h2>軟和硬，差在誰決定規則有沒有被執行</h2>
+    <div class="quad c4-quad" data-x="觸發：AI 想到才做 → 系統一定觸發" data-y="判定：AI 判斷 → 程式判定">
+      <div class="cell">
+        <p class="c4-qhead"><span class="tag medium">半軟</span><small>AI 想到才做 × 程式判定</small></p>
+        <p class="c4-qwhat">叫 AI 自己記得跑測試</p>
+        <p class="c4-qex">verification-before-completion<span class="gloss">（完成前先驗證）</span>：0 次</p>
+      </div>
+      <div class="cell">
+        <p class="c4-qhead"><span class="tag high">硬</span><small>系統一定觸發 × 程式判定</small></p>
+        <p class="c4-qwhat">hook<span class="gloss">（觸發腳本）</span> 擋下、CI 必過</p>
+        <p class="c4-qex">我設的 hook：1 支，擋品質的 0 支</p>
+      </div>
+      <div class="cell">
+        <p class="c4-qhead"><span class="tag low">軟</span><small>AI 想到才做 × AI 判斷</small></p>
+        <p class="c4-qwhat">skill<span class="gloss">（技能）</span> 叫 AI 自己去 review<span class="gloss">（審查）</span></p>
+        <p class="c4-qex">requesting-code-review<span class="gloss">（請人審查程式碼）</span>：0 次</p>
+      </div>
+      <div class="cell">
+        <p class="c4-qhead"><span class="tag medium">半硬</span><small>系統一定觸發 × AI 判斷</small></p>
+        <p class="c4-qwhat">每個 PR 自動跑 AI reviewer<span class="gloss">（AI 審查者）</span>、每天的排程</p>
+        <p class="c4-qex">自建 Claude review 在我的 PR 上自動跑了 232 次</p>
+      </div>
+    </div>
+    <p class="c4-reading"><span class="reading">R2 Harness engineering</span>判定這一軸，就是它分的 computational（程式判定）和 inferential（AI 判斷）。</p>
+  </div>
+  <aside class="notes">
+    <p>我覺得差在兩個問題。第一，要不要做：是 AI 想到才做，還是系統一定會觸發。第二，做得對不對：是 AI 自己判斷，還是程式判定。兩個一交叉，就是這四格。</p>
+    <p>剛剛那兩個 skill 都在左邊，要 AI 想到才會跑。requesting-code-review 在左下，最軟，對不對也是 AI 自己說了算。verification-before-completion 在左上，測試是程式判的，可是要 AI 想到才會跑，一樣 0 次。右下是半硬：我們自建的 Claude review 每個 PR 都自動跑，第 1 章那 232 次就是它，一定會跑，但判斷還是 AI。右上最硬：hook 擋下、CI 必過。這格我要誠實，我設的 hook 只有 1 支，還是記錄用的，沒有一支在擋品質。</p>
+    <p>Harness engineering 也是這樣分，它還提醒：只有事後檢查，agent<span class="gloss">（AI 代理）</span> 會一直犯同樣的錯；只有事前引導，規則寫了也不知道有沒有用。所以我覺得不用每條都變硬，軟硬要搭配，但重要的那幾條要往右上搬。那要怎麼做硬？</p>
+  </aside>
+</section>
+
+<!-- slide-file: 05-hard-rules.html -->
+<!-- 第 4 章｜把重要的規則做硬（P14–P16）。數字來源：research/claude-code-evidence.md §2.1（AskUserQuestion 06–10 月 149 次）、卡 2（7/8 board-sync 自己刪節點、使用者原話、SKILL.md 紅線、紅隊抓到跳過工具呼叫攔不住、server 大量刪除要帶雜湊重送、bench 6/8 與 3/8、haiku 宣稱已完成卻沒有執行 apply、寫錯欄位自報成功、改由腳本 fail-stop）；research/github-evidence.md §0 第 9 點、§2.2（驗證 workflow 檢查什麼、board-sync 所在的共用 skill 庫）、§2.4、故事卡 G（1/14、8/31、7 個半月、27 個 PR、8 個是我的、2 個真缺陷、commit 訊息原文）。改版前的階梯那頁併進現在的 P14；改版前的「驗證結果實例」那頁刪掉，只留 board-sync bench 一例併進現在的 P16。P16 的 Jev 查證網址見 research/verification-sources.md。 -->
+<style>
+  /* 第 4 章專用樣式：class 一律加 c5- 前綴，只補版面，不改共用元件 */
+
+  /* P14：四種硬度用共用的 .ladder（DOM 由軟到硬寫，畫面由下而上越硬）；下面一行是升級的例子 */
+  .c5-up { margin: 0; padding: 12px 20px; border: 1.5px dashed var(--primary, #3157d5); border-radius: 12px; color: var(--ink, #172033); font-size: 20px; line-height: 1.45; }
+  .c5-up b { margin-right: 12px; color: var(--primary, #3157d5); }
+
+  /* P15：沉默的時間軸（單一序列，不需圖例；數值也寫在標籤與備註裡） */
+  .c5-fig { margin: 0; }
+  .c5-fighead { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 2px 0 0; font-size: 20px; line-height: 1.4; }
+  .c5-team { display: inline-block; padding: 1px 10px; border: 1px solid var(--line, #dfe5ef); border-radius: 999px; background: var(--paper, #fff); color: var(--muted, #5d687b); font-size: 18px; font-weight: 600; white-space: nowrap; }
+  .c5-tl { display: block; width: 100%; height: auto; margin: 4px 0 0; }
+  .c5-tl .c5-axis, .c5-tl .c5-ticks line { stroke: var(--muted, #5d687b); stroke-opacity: .55; stroke-width: 1.5; }
+  .c5-tl .c5-lead { stroke: var(--muted, #5d687b); stroke-opacity: .7; stroke-width: 1; }
+  .c5-tl .c5-band { fill: var(--danger-soft, #fff0ee); }
+  .c5-tl .c5-run { fill: var(--machine, #0f766e); stroke: var(--paper, #fff); stroke-width: 2; }
+  .c5-tl text { fill: var(--ink, #172033); }
+  .c5-tl .c5-lbl { font-size: 20px; font-weight: 700; }
+  .c5-tl .c5-in { font-size: 20px; }
+  .c5-tl .c5-mon text { fill: var(--muted, #5d687b); font-size: 19px; }
+  .c5-p18 blockquote.quote { margin-top: 6px; }
+  .c5-p18 blockquote.quote cite { display: inline; margin-left: 12px; }
+
+  /* P16：一個實例＋交接時附上驗證結果的流程（5 個節點）；Jev 一句話和圖例放在流程下方同一行 */
+  .flow.c5-flow { display: grid; grid-template-columns: minmax(0, .9fr) 24px minmax(0, 1fr) 24px minmax(0, 1.2fr) 24px minmax(0, 1.2fr) 24px minmax(0, 1.15fr); gap: 6px; align-items: stretch; }
+  .c5-flow .node { padding: 10px 8px; }
+  .c5-flow .c5-key { box-shadow: inset 0 0 0 2px var(--machine, #0f766e); }
+  .c5-legend-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 16px; margin-top: 8px; }
+  .c5-jev { margin: 0; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.4; }
+
+  /* 窄螢幕讀筆記：和共用的 .flow 一樣改成直排（簡報模式與列印維持舞台排版） */
+  @media screen and (max-width: 760px) {
+    body:not(.mode-slides) .flow.c5-flow { grid-template-columns: minmax(0, 1fr); }
+    body:not(.mode-slides) .c5-flow .arrow { transform: rotate(90deg); }
+  }
+  /* 2026-10-29 加中文翻譯後騰空間：字寬加 5% 也不會切到底 */
+  .slide-body.c5-handoff-body { gap: 16px; }
+</style>
+
+<section class="slide" id="p14" data-chapter="第 4 章｜把重要的規則做硬" data-seconds="90">
+  <div class="slide-body">
+    <div class="eyebrow">怎麼做硬：四種硬度，同樣的錯犯第二次就往上升一級</div>
+    <h2>四種硬度：越上面，越不靠 AI 記得</h2>
+    <div class="spacer"></div>
+    <div class="ladder">
+      <div class="rung"><b>會被提醒</b><span>寫在 CLAUDE.md<span class="gloss">（給 AI 看的專案規則檔）</span>、skill<span class="gloss">（技能）</span> 裡，要 AI 自己記得</span></div>
+      <div class="rung"><b>一定會被審</b><span>每個 PR 自動跑的 AI reviewer<span class="gloss">（AI 審查者）</span>、看板檢核點</span></div>
+      <div class="rung"><b>會被擋下</b><span>hook<span class="gloss">（觸發腳本）</span>、CI 必過，沒過就不能往下走</span></div>
+      <div class="rung"><b>做不到</b><span>權限 deny<span class="gloss">（拒絕）</span>、不給憑證，AI 想做也做不了</span></div>
+    </div>
+    <p class="c5-up"><b>例子</b>AI 刪資料前要先問我：口頭糾正、寫進規則、綁進 skill 的流程（6–10 月 AI 停下來問我 149 次），最後由系統擋下</p>
+    <div class="spacer"></div>
+  </div>
+  <aside class="notes">
+    <p>要做硬，我把做法分成四種，越上面越硬。最下面是會被提醒，寫在 CLAUDE.md、skill 裡，上一章那條 0 次的規則就是這種。再上去是一定會被審，像每個 PR 自動跑的 AI reviewer。再上去是會被擋下，hook、CI 必過，沒過就不能往下走。最上面是做不到，不給權限、不給憑證，AI 想做也做不了。</p>
+    <p>我不會一開始就全部做硬，同樣的錯犯第二次，就往上升一級。例子是 AI 刪資料前要先問我。7 月 8 號我測 board-sync，就是讓 AI 改看板的那個 skill，叫它刪節點，它沒問我要刪什麼就自己刪了。我回它：新增會給使用者確認後才送出，刪除不也應該一樣嗎？接著寫進 SKILL.md<span class="gloss">（技能說明檔）</span> 當紅線，再綁進流程，刪之前 AI 要停下來問我，這就是一定會被審。6 到 10 月，AI 像這樣停下來問我一共 149 次。可是我請另一個 AI 當紅隊來挑，它抓到 AI 乾脆不呼叫問我的那個工具，也沒有東西攔得住。所以再升一級，由 server<span class="gloss">（伺服器）</span> 擋下：大量刪除要帶雜湊重送，不然回 409。</p>
+    <p>可是做硬了，它就一定有在跑嗎？</p>
+  </aside>
+</section>
+
+<section class="slide" id="p15" data-chapter="第 4 章｜把重要的規則做硬" data-seconds="90">
+  <div class="slide-body c5-p18">
+    <div class="eyebrow">但做硬了，也可能根本沒在跑</div>
+    <h2>7 個半月沒跑，也沒有紅燈</h2>
+    <div class="spacer"></div>
+    <figure class="c5-fig">
+      <p class="c5-fighead"><b>團隊的一支驗證 workflow<span class="gloss">（工作流程）</span>：</b>檢查共用 skill<span class="gloss">（技能）</span> 庫的目錄結構和登記。資料夾改名後，路徑條件對不上，它就不會被觸發<span class="c5-team">團隊經驗</span></p>
+      <svg class="c5-tl" viewBox="0 0 1120 114" role="img" aria-labelledby="c5-tl-title">
+        <title id="c5-tl-title">2026 年 1 月 14 日最後一次執行，到 8 月 31 日才再執行；中間 0 次，期間合併 27 個 PR</title>
+        <line class="c5-axis" x1="40" y1="82" x2="1080" y2="82"/>
+        <g class="c5-ticks">
+          <line x1="60" y1="82" x2="60" y2="89"/><line x1="173.6" y1="82" x2="173.6" y2="89"/><line x1="276.1" y1="82" x2="276.1" y2="89"/><line x1="389.7" y1="82" x2="389.7" y2="89"/><line x1="499.6" y1="82" x2="499.6" y2="89"/><line x1="613.1" y1="82" x2="613.1" y2="89"/><line x1="723" y1="82" x2="723" y2="89"/><line x1="836.6" y1="82" x2="836.6" y2="89"/><line x1="950.1" y1="82" x2="950.1" y2="89"/><line x1="1060" y1="82" x2="1060" y2="89"/>
+        </g>
+        <rect class="c5-band" x="116" y="48" width="822" height="34" rx="6"><title>1/14 到 8/31：0 次執行，期間合併 27 個 PR（8 個是我的）</title></rect>
+        <text class="c5-in" x="527" y="71" text-anchor="middle">7 個半月 0 次執行，期間合併 27 個 PR（8 個是我的）</text>
+        <line class="c5-lead" x1="108" y1="41" x2="108" y2="73"/>
+        <line class="c5-lead" x1="946" y1="41" x2="946" y2="73"/>
+        <circle class="c5-run" cx="108" cy="82" r="8"><title>1/14 最後一次執行</title></circle>
+        <circle class="c5-run" cx="946" cy="82" r="8"><title>8/31 同事修好，重新執行</title></circle>
+        <text class="c5-lbl" x="96" y="34">1/14 最後一次執行</text>
+        <text class="c5-lbl" x="958" y="34" text-anchor="end">8/31 同事修好，當天抓到 2 個真缺陷</text>
+        <g class="c5-mon">
+          <text x="116.8" y="108" text-anchor="middle">1 月</text><text x="224.9" y="108" text-anchor="middle">2 月</text><text x="332.9" y="108" text-anchor="middle">3 月</text><text x="444.7" y="108" text-anchor="middle">4 月</text><text x="556.4" y="108" text-anchor="middle">5 月</text><text x="668.1" y="108" text-anchor="middle">6 月</text><text x="779.8" y="108" text-anchor="middle">7 月</text><text x="893.4" y="108" text-anchor="middle">8 月</text><text x="1005.1" y="108" text-anchor="middle">9 月</text>
+        </g>
+      </svg>
+      <blockquote class="quote">Silent absence, not a red build, is why nobody noticed.<cite>同事修好它時的 commit 訊息，8/31</cite></blockquote>
+    </figure>
+    <div class="spacer"></div>
+    <div class="thesis">Checker<span class="gloss">（檢查機制）</span> 沒在跑不會亮紅燈，所以每一道都要看得出它有沒有在跑</div>
+  </div>
+  <aside class="notes">
+    <p>做硬了，也可能根本沒在跑。講一個團隊的例子。我們團隊有一個共用的 skill 庫，board-sync 也放在那裡。庫裡有一支驗證 workflow，改到 skill 就會自動跑，檢查目錄結構對不對、有沒有登記。系統一定觸發、程式判定，照上一章的四格，它在最硬的右上角。</p>
+    <p>1 月有一次重構，把資料夾改了名字，可是 workflow 的路徑條件還寫著舊名字。結果從 1 月 14 號到 8 月 31 號，7 個半月一次都沒觸發，中間合併了 27 個 PR，8 個是我的，我也完全沒發現。它沒跑，就不會變紅，所以一直沒人注意到。8 月 31 號同事修好它，當天就抓到 2 個真缺陷，其中一支 skill 從來沒登記，根本裝不起來。同事的修法是拿掉路徑條件，每次都跑，一次大約 15 秒。commit<span class="gloss">（提交）</span> 訊息裡那句就是在講這件事：它沒有變紅，只是安靜地不見了。</p>
+    <p>所以每一道 Checker，我都要看得出它有沒有在跑。AI 也一樣，它跟我說做完了，我怎麼知道它真的跑過驗證？</p>
+  </aside>
+</section>
+
+<section class="slide" id="p16" data-chapter="第 4 章｜把重要的規則做硬" data-seconds="90">
+  <div class="slide-body c5-handoff-body">
+    <div class="eyebrow">所以 AI 說做完了還不算</div>
+    <h2>交接時附上驗證結果</h2>
+    <div class="card">
+      <strong>board-sync 發版前的 benchmark<span class="gloss">（基準測試）</span>：AI 說做完了，卻沒有做</strong>
+      <p>同一版本量兩次，8 格只過 6 格、3 格，失敗都是 haiku<span class="gloss">（較小的 Claude 模型）</span>「宣稱已完成卻沒有執行 apply」；<br>寫錯欄位也自報成功，所以改由腳本判定，失敗就停。</p>
+    </div>
+    <div>
+      <div class="flow c5-flow">
+        <div class="node human">規則<small>我寫：<br>做完 X 要跑 Y</small></div>
+        <div class="arrow">→</div>
+        <div class="node machine">系統觸發 Y<small>hook<span class="gloss">（觸發腳本）</span>、CI、排程<br>不靠 AI 想到</small></div>
+        <div class="arrow">→</div>
+        <div class="node machine c5-key">驗證結果<small>commit SHA<span class="gloss">（提交的雜湊值）</span>、測試數<br>系統寫，AI 改不到</small></div>
+        <div class="arrow">→</div>
+        <div class="node machine">程式先檢查<small>SHA 對得上？<br>測試數 &gt; 0？</small></div>
+        <div class="arrow">→</div>
+        <div class="node agent">Jev 這類工具<small>下一個環節快速判斷：<br>真的跑過驗證嗎？</small></div>
+      </div>
+      <div class="c5-legend-row"><p class="c5-jev">Jev：只回判定、不寫字的模型</p><div class="legend"><span class="human">人</span><span class="agent">agent</span><span class="machine">機器</span></div></div>
+    </div>
+    <div class="thesis">到這裡的答案 3：重要的規則不能靠 AI 記得：<br>觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果</div>
+  </div>
+  <aside class="notes">
+    <p>我自己就遇過 AI 說做完了，卻沒有做。board-sync 每次發版前，我都會用 benchmark 跑一組固定的情境題，看它有沒有變慢、變壞。有一次同一個版本量兩次，8 格只過 6 格、3 格，失敗都是 haiku 說做完了，卻沒有執行 apply<span class="gloss">（套用）</span>，也就是根本沒寫進看板。更早還有一次，它把字寫進錯的欄位，也跟我說成功。後來改由腳本判定，失敗就停。</p>
+    <p>所以 AI 說做完了，我不收，要附上驗證結果。規則我來寫；觸發交給系統，hook、CI、排程，不靠 AI 想到；跑完由系統留下驗證結果，像 commit SHA、exit code<span class="gloss">（結束碼）</span>、測了幾個，AI 改不到。下一個環節先用程式檢查，SHA 對不對、測試數是不是大於 0。程式判斷不了的，我想用 Jev 這類工具快速判斷，提交的內容是不是真的跑過驗證。Jev 是只回判定、不寫字的模型，廠商說又快又便宜，我還沒驗過。</p>
+    <p>重要的規則，不能靠 AI 記得。可是規則和檢查越做越多，又會遇到另一個問題。</p>
+  </aside>
+</section>
+
+<!-- slide-file: 06-lifecycle.html -->
+<style>
+/* 第 5 章（P17–P20）專用樣式：class 一律 c6- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
+.c6-split { display: grid; grid-template-columns: 1.45fr 1fr; gap: 28px; align-items: center; }
+.c6-stats { gap: 10px; }
+.c6-stats .stat { display: grid; grid-template-columns: auto 1fr; column-gap: 14px; align-items: center; padding: 12px 18px; }
+.c6-stats .stat > b { margin: 0; font-size: 48px; line-height: 1; }
+.c6-caption { color: var(--muted); font-size: 18px; line-height: 1.45; }
+.c6-fix th[scope="row"] { width: 268px; }
+.c6-fix th small { display: block; margin-top: 2px; font-weight: 400; color: var(--muted); font-size: 18px; }
+.c6-fix th .tag { margin-left: 6px; }
+.c6-code { display: flex; flex-direction: column; gap: 6px; }
+.c6-ex { padding-top: 8px; border-top: 1px dashed var(--line); font-size: 20px; }
+.c6-warn { color: var(--danger); }
+</style>
+
+<section class="slide" id="p17" data-chapter="第 5 章｜規則一多，又會被略過" data-seconds="70">
+  <div class="slide-body">
+    <p class="eyebrow">規則和檢查越做越多，就會被略過</p>
+    <h2>人、警報、AI 都有這個現象</h2>
+    <div class="grid cols-3">
+      <div class="card human">
+        <strong>人：意見太多，讀不完</strong>
+        <p>我開的 86 個 PR 上有 1,637 則對話，人親手寫的只有約 45 則、約 3% <em class="src estimated">估計</em></p>
+      </div>
+      <div class="card machine">
+        <strong>警報：一直響，就被無視</strong>
+        <p>回歸紀錄把唯一的紅燈，直接算給一支老是 flaky<span class="gloss">（時好時壞）</span> 的舊測試，理由是單獨跑就過</p>
+      </div>
+      <div class="card agent">
+        <strong>AI：回饋一多，也會漏</strong>
+        <p>review<span class="gloss">（審查）</span> 一多就只讀摘要、沒讀行內留言；漏讀 2 次，其中一份裡有 Critical<span class="gloss">（嚴重）</span></p>
+      </div>
+    </div>
+    <div class="legend" aria-label="顏色圖例"><span class="human">人</span><span class="agent">agent</span><span class="machine">機器</span></div>
+    <div class="callout good">寫《清單革命》的 Gawande 說：好清單很短，只放最致命、不能漏的步驟</div>
+  </div>
+  <aside class="notes">
+    <p>這個問題就是：東西一多，就會被略過。我覺得不只 AI 會這樣，人和警報也一樣。</p>
+    <p>先說人。我開的 86 個 PR 上，一共有 1,637 則對話，人親手寫的大概只有 45 則，百分之三左右。這不能怪大家偷懶，AI 一波就能貼三十則，人讀得完的就那幾則。</p>
+    <p>警報也是。flaky 測試偶爾會無故變紅，久了大家就習慣不理紅燈。我們有一份回歸紀錄，就直接把唯一的紅燈算給一支老是 flaky 的舊測試，理由是單獨跑就過。</p>
+    <p>AI 也一樣，review 一多，它就只讀摘要。它漏讀過兩次，其中一次漏掉的那份 review，裡面就是前面那個並發 Critical。</p>
+    <p>寫《清單革命》的外科醫師 Gawande 講得很直接：好清單很短，只放最致命、不能漏的步驟。</p>
+    <p>可是東西還是一直變多，那我自己是怎麼管的？</p>
+  </aside>
+</section>
+
+<section class="slide" id="p18" data-chapter="第 5 章｜規則一多，又會被略過" data-seconds="75">
+  <div class="slide-body">
+    <p class="eyebrow">我怎麼管越來越多的東西：每天跑的一個循環</p>
+    <h2>我的工作脈絡：自己記、自己清</h2>
+    <div class="spacer"></div>
+    <div class="c6-split">
+      <div class="loop">
+        <div class="step"><strong>記錄</strong><p>hook<span class="gloss">（觸發腳本）</span> 默默記下我每句話的前 100 字</p></div>
+        <div class="step"><strong>消化</strong><p>每天排程分三類：<br>新變化、只是提到、無關</p></div>
+        <div class="step"><strong>收斂</strong><p>更新工作脈絡檔，記下我現在在做什麼</p></div>
+        <div class="step"><strong>淡出</strong><p>45 天沒提就移到淡出區，再 90 天就刪掉</p></div>
+      </div>
+      <div class="stack c6-stats">
+        <div class="stat"><b>44</b><span>次排程執行（8/31 起），43 次成功</span></div>
+        <div class="stat"><b>4</b><span>條在 10/16 第一次自動淡出</span></div>
+      </div>
+    </div>
+    <p><span class="reading">R5 Codex-maxxing</span> 裡面的 loop<span class="gloss">（迴圈）</span>：Context<span class="gloss">（上下文）</span> → Tools<span class="gloss">（工具）</span> → Memory<span class="gloss">（記憶）</span> → Recurrence<span class="gloss">（定期重跑）</span> → Review<span class="gloss">（審查）</span>，跟我這個幾乎一樣</p>
+    <div class="spacer"></div>
+  </div>
+  <aside class="notes">
+    <p>我自己是靠一個每天跑的循環在管。這是我記工作脈絡的機制，跟 code 沒有直接關係，不過等一下我會把它套到 Checker<span class="gloss">（檢查機制）</span> 上。</p>
+    <p>記錄：我跟 Claude Code 講的每一句話，hook 會默默記下前 100 個字。</p>
+    <p>消化：每天早上 10 點 06 分，排程把前一天的對話分成三類：新的變化、只是提到、無關。</p>
+    <p>收斂：有變化的，寫進我的工作脈絡檔，就是記我現在在做什麼的那一份；只是提到的，就把最後提到的日期往後改。</p>
+    <p>淡出：45 天沒再提到的，移到淡出區，再放 90 天就刪掉。</p>
+    <p>排程從 8 月 31 號開始跑，跑了 44 次，成功 43 次，唯一一次失敗是斷網。10 月 16 號它第一次自己淡出了 4 條，都是 46 天沒提的。這種清理，我自己一定不會記得做。</p>
+    <p>Codex-maxxing 也畫了一個很像的 loop，最後一格是 Review。我的循環寫進檔案就結束了，沒有東西再檢查它。</p>
+  </aside>
+</section>
+
+<section class="slide" id="p19" data-chapter="第 5 章｜規則一多，又會被略過" data-seconds="80">
+  <div class="slide-body">
+    <p class="eyebrow">這個循環自己也出過錯</p>
+    <h2>消化這一步，也是一道 Checker</h2>
+    <div class="table-wrap c6-fix">
+      <table>
+        <thead>
+          <tr><th>哪一端</th><th>之前：10/14 出事（兩週後才發現）</th><th>之後：10/28 更正並補上</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">記錄端（hook）<span class="tag high">硬</span><small>系統一定觸發 × 程式判定</small></th>
+            <td>不看對話在哪個目錄，33 場 benchmark<span class="gloss">（基準測試）</span> 測試對話全收進來</td>
+            <td>對話目錄在 /tmp、/var/folders 底下就不記，7 個情境都測過</td>
+          </tr>
+          <tr>
+            <th scope="row">消化端（排程）<span class="tag medium">半硬</span><small>系統一定觸發 × AI 判斷</small></th>
+            <td>不看證據，把 16 場判成真進度，脈絡檔寫「產生驗收測試 skill 已完成並 merge」，<b>看板上還是 done:false</b></td>
+            <td>要寫成已完成，那場要看得到 PR、commit<span class="gloss">（提交）</span> 或連結，不然只能寫進行中</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="c6-code">
+      <p class="c6-caption">記錄端 10/28 加的判斷（hook 程式節錄，「+」是新增的行）</p>
+      <pre class="code">+ TEMP_ROOTS = ("/private/tmp/", "/tmp/", "/private/var/folders/", "/var/folders/")
+  …
++ if cwd and (os.path.realpath(cwd) + "/").startswith(TEMP_ROOTS):
++     sys.exit(0)</pre>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>沒有東西檢查它，10 月就出事了。</p>
+    <p>10 月 13、14 號，我在跑前面講的 board-sync benchmark，一口氣開了 33 場測試對話。hook<span class="gloss">（觸發腳本）</span> 不看對話在哪個目錄，全部照收。14 號的排程也不看證據，把其中 16 場判成真的進度。結果我的脈絡檔寫著：產生驗收測試的 skill<span class="gloss">（技能）</span> 已完成並 merge<span class="gloss">（合併）</span>。可是看板上那支 skill 還是 done:false，那句話只是測試題裡的字串。兩個禮拜後我核對證據才發現，10/28 更正，補了兩道。</p>
+    <p>記錄端補成硬的，就是下面這幾行：對話的目錄在 /tmp 或 /var/folders 底下就不記。消化端只能補成半硬：排程一定會跑，但判斷還是靠 AI，所以我在 prompt<span class="gloss">（提示詞）</span> 加了證據規則，要寫成已完成，那場對話要看得到 PR、commit 或連結，不然只能寫進行中。</p>
+    <p>這剛好對到前面那張誰觸發、誰判定的 2×2。消化這一步，本身也是一道 Checker<span class="gloss">（檢查機制）</span>。那同一個循環，能不能拿來管 Checker？</p>
+  </aside>
+</section>
+
+<section class="slide" id="p20" data-chapter="第 5 章｜規則一多，又會被略過" data-seconds="75">
+  <div class="slide-body">
+    <p class="eyebrow">把同一個循環，套到 Checker 和規則上</p>
+    <h2>要加還是要減，看記下來的資料</h2>
+    <div class="grid cols-4">
+      <div class="card">
+        <strong>記錄</strong>
+        <p>一響就記一筆：抓到、誤報、重複、漏掉</p>
+        <p class="c6-ex">例：同一個 Warning<span class="gloss">（警告）</span> 報了 4 次</p>
+      </div>
+      <div class="card">
+        <strong>消化</strong>
+        <p>定期分類，不靠感覺</p>
+        <p class="c6-ex">例：自建 review<span class="gloss">（審查）</span> 跑 232 次，只有 12.5% 說 0 項問題</p>
+      </div>
+      <div class="card">
+        <strong>收斂</strong>
+        <p>抓到真問題，寫成測試<br>一直誤報，就改結構</p>
+        <p class="c6-ex">例：並發 Critical<span class="gloss">（嚴重）</span> 寫成測試，之後每次都擋</p>
+      </div>
+      <div class="card">
+        <strong>淡出</strong>
+        <p>很久沒抓到真問題，<br>先降成提醒，再拿掉</p>
+        <p class="c6-ex">例：機場的脫鞋規定，2025 年 7 月取消</p>
+      </div>
+    </div>
+    <div class="callout danger"><b class="c6-warn">例外：罕見但致命的，不能照天數淡出。</b>資安、資料遺失這類，要先用演練證明它還擋得住。</div>
+    <div class="thesis">到這裡的答案 4：最多能放幾道，看人的注意力；中間靠資料增減</div>
+  </div>
+  <aside class="notes">
+    <p>工作脈絡會出的事，Checker<span class="gloss">（檢查機制）</span> 也一樣會出。所以我把同一個循環套到 Checker 和規則上，一樣四步。</p>
+    <p>記錄：Checker 每響一次就記一筆，是真的抓到、誤報、重複，還是事後才發現漏掉。像登入畫面那個 PR，同一個 Warning 報了 4 次，有記下來才看得出它一直重複。</p>
+    <p>消化：定期分類，不靠感覺。自建 review 跑了 232 次，只有一成二說沒問題，所以什麼時候停，只能人決定。</p>
+    <p>收斂：抓到的真問題就寫成測試，像那個並發 Critical；一直誤報的就改結構；同樣的錯犯第二次，就升一級。</p>
+    <p>淡出：很久沒抓到真問題的，先降成提醒，再拿掉，機場的脫鞋規定也取消了。但資安、資料遺失這種罕見又致命的，不能照天數淡出，要先用演練證明它還擋得住。</p>
+    <p>所以最多能放幾道，看人的注意力；中間要加還是要減，靠資料。把四段答案拼起來，就是我的答案。</p>
+  </aside>
+</section>
+
+<!-- slide-file: 07-answer.html -->
+<style>
+/* 第 6 章（P21）專用樣式：class 一律 c7- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
+.c7-list { display: flex; flex-direction: column; gap: 8px; }
+.c7-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) 236px; column-gap: 18px; align-items: center; padding: 8px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
+.c7-n { color: var(--primary); font-size: 22px; font-weight: 800; line-height: 1.3; white-space: nowrap; }
+.c7-a { color: var(--ink); font-size: 24px; font-weight: 700; line-height: 1.4; }
+.c7-r { margin-top: 2px; color: var(--muted); font-size: 19px; line-height: 1.4; }
+.c7-to { padding: 6px 12px; border-left: 4px solid var(--primary); border-radius: 8px; background: var(--primary-soft); color: var(--primary); font-size: 20px; font-weight: 700; line-height: 1.35; }
+.c7-foot { margin: 0; color: var(--muted); font-size: 18px; line-height: 1.4; }
+  /* 2026-10-29 加中文翻譯後騰空間：字寬加 5% 也不會切到底 */
+.slide-body.c7-body { gap: 16px; }
+</style>
+
+<section class="slide" id="p21" data-chapter="第 6 章｜我的答案" data-seconds="120">
+  <div class="slide-body c7-body">
+    <p class="eyebrow">把四段答案拼起來</p>
+    <h2>下限看風險，上限看人的注意力，中間靠資料調整</h2>
+    <div class="c7-list">
+      <div class="c7-row">
+        <b class="c7-n">答案 1</b>
+        <div><p class="c7-a">Checker<span class="gloss">（檢查機制）</span> 不是越多越好，每加一道都有成本，還可能出事</p><p class="c7-r">回想：工具目錄那個 PR，reviewer<span class="gloss">（審查者）</span> 要我加的檢查，差點讓整份目錄停更</p></div>
+        <span class="c7-to">前提：不能一直加</span>
+      </div>
+      <div class="c7-row">
+        <b class="c7-n">答案 2</b>
+        <div><p class="c7-a">最少要放幾道，由風險決定</p><p class="c7-r">回想：看板從全自動、0 個檢核點，改成把人加回來</p></div>
+        <span class="c7-to">下限看風險</span>
+      </div>
+      <div class="c7-row">
+        <b class="c7-n">答案 3</b>
+        <div><p class="c7-a">重要的規則不能靠 AI 記得：觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果</p><p class="c7-r">回想：board-sync 的 benchmark<span class="gloss">（基準測試）</span> 裡，AI 說做完了，卻沒有做</p></div>
+        <span class="c7-to">AI 時代：<br>重要的規則要做硬</span>
+      </div>
+      <div class="c7-row">
+        <b class="c7-n">答案 4</b>
+        <div><p class="c7-a">最多能放幾道，看人的注意力；中間靠資料增減</p><p class="c7-r">回想：我開的 86 個 PR 上，人親手寫的對話只有約 3% <em class="src estimated">估計</em></p></div>
+        <span class="c7-to">上限看注意力，<br>中間靠資料</span>
+      </div>
+    </div>
+    <p class="c7-foot"><span class="reading">R1 Swarm Forge</span>作者之一 Uncle Bob 說，他只核准規格、不讀 code <em class="src claimed">宣稱</em>；我也不讀 code，看的是驗證結果和 AC<span class="gloss">（驗收條件）</span></p>
+  </div>
+  <aside class="notes">
+    <p>這頁把前面四段答案拼起來，順序就是我自己踩過的順序。</p>
+    <p>答案 1：Checker 不是越多越好，每加一道都有成本，還可能出事。像工具目錄那個 PR，reviewer 要我加的檢查，差點讓整份目錄每小時停更。這是前提，所以不能一直加。</p>
+    <p>答案 2：最少要放幾道，由風險決定。每一個出事會很痛的失敗模式，至少要有一道獨立的 Checker，獨立的意思是不同模型或不同人寫的，而且寫 code 的 AI 改不到它。我的看板從全自動改成把人加回來，就是這樣。這是下限。</p>
+    <p>答案 3 回答題目第四句的 AI 時代。題目說原本靠工程師記得的規則，要變成機器強制；我覺得換成 AI 也一樣，重要的規則不能靠 AI 記得。觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果。像 board-sync 的 benchmark，AI 說做完了，卻沒有做，所以不能只聽它說。</p>
+    <p>答案 4：最多能放幾道，看人的注意力。我開的 86 個 PR 上，人親手寫的對話只有百分之三左右，人讀得完的就這麼多。中間要加還是要減，就靠剛剛那個循環：每一道響了幾次、抓到幾次真問題都記下來，該收斂的收斂，該淡出的淡出。</p>
+    <p>讀物這邊，R1 的作者之一 Uncle Bob，媒體轉述他說現在只核准規格、不讀 code。我自己也不讀 code，我看的是驗證結果和 AC，這就是答案 3 在講的事。</p>
+    <p>合起來，就是我一開始放在題目下面的答案：下限看風險，上限看人的注意力，中間靠資料調整。最後，我留三句話和三個問題給大家。</p>
+  </aside>
+</section>
+
+<!-- slide-file: 08-close.html -->
+<style>
+/* 第 7 章（P22–P23）專用樣式：class 一律 c8- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
+.c8-pairs { display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px 18px; }
+.c8-head { font-size: 18px; font-weight: 700; color: var(--muted); letter-spacing: .08em; }
+.c8-take { position: relative; padding: 10px 16px 10px 62px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); font-weight: 700; line-height: 1.45; }
+.c8-take > b { position: absolute; left: 16px; top: 11px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--primary); color: #fff; font-size: 20px; }
+.c8-take small { display: block; margin-top: 6px; font-size: 19px; font-weight: 400; color: var(--muted); }
+.c8-ask { display: flex; align-items: center; padding: 10px 18px; border-left: 5px solid var(--primary); border-radius: 14px; background: var(--primary-soft); line-height: 1.45; }
+.c8-reads { border-top: 1px solid var(--line); }
+.c8-read { display: grid; grid-template-columns: 52px minmax(0, 1fr); column-gap: 8px; padding: 4px; border-bottom: 1px solid var(--line); }
+.c8-read > b { grid-row: span 2; align-self: center; color: var(--primary); font-size: 20px; }
+.c8-t { font-size: 20px; font-weight: 700; line-height: 1.3; }
+.c8-m { font-size: 18px; line-height: 1.35; color: var(--muted); }
+.c8-reads a, .c8-more a { overflow-wrap: anywhere; }
+.c8-more { font-size: 19px; line-height: 1.45; }
+.c8-more li + li { margin-top: 2px; }
+</style>
+
+<section class="slide" id="p22" data-chapter="第 7 章｜收尾與討論" data-seconds="90">
+  <div class="slide-body">
+    <p class="eyebrow">收尾｜討論留到三位講者都講完</p>
+    <h2>我想留給大家的三句話和三個問題</h2>
+    <div class="c8-pairs">
+      <div class="c8-head">帶走</div>
+      <div class="c8-head">留給討論</div>
+      <div class="c8-take"><b>1</b>先問這裡最可能壞在哪，再決定放什麼 Checker<span class="gloss">（檢查機制）</span>，不要先問還能加什麼工具。<small>回想：一個 PR 5 家 reviewer<span class="gloss">（審查者）</span>、9 波，修正又帶出新的 P0<span class="gloss">（最高優先級）</span></small></div>
+      <div class="c8-ask">如果只能留三道 Checker，你留哪三道？</div>
+      <div class="c8-take"><b>2</b>越重要的規則越不能靠記得：觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果。<small>回想：規則寫了不得跳過，135 天觸發 0 次</small></div>
+      <div class="c8-ask">你寫過的「必須」規則，有幾條真的有東西在擋？</div>
+      <div class="c8-take"><b>3</b>Checker 要有生命週期：記錄、消化、收斂、淡出；從來不響的那道，先用演練證明它還擋得住。<small>回想：我的循環 10/14 誤判 16 場，10/28 補上兩道</small></div>
+      <div class="c8-ask">你們 CI 裡最久沒抓到真問題的是哪一道？該淡出，還是該演練？</div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>如果今天只記得三句話，我希望是這三句。</p>
+    <p>第一句：先問這裡最可能壞在哪，再決定放什麼 Checker，不要先問還能加什麼工具。反例就是一開始那個 PR，5 家 reviewer、跑了 9 波，工具越加越多，修正又帶出新的 P0。</p>
+    <p>第二句：越重要的規則，越不能靠記得。觸發交給系統，判定能寫成程式就寫，交接的時候要附上驗證結果。反例是我自己：規則寫了不得跳過，135 天一次都沒觸發。</p>
+    <p>第三句：Checker 要有生命週期，記錄、消化、收斂、淡出；那道從來不響的，先別急著拿掉，先用演練證明它還擋得住。這句來自我的循環 10/14 誤判、10/28 才補上兩道。</p>
+    <p>如果下週只想做一件事，我會建議：挑你最依賴的那道 Checker，故意放一個錯進去，看它擋不擋得住。</p>
+    <p>右邊三個問題剛好一句對一題，等三位講者都講完再一起討論：如果只能留三道 Checker，你會留哪三道？你寫過的「必須」規則，有幾條真的有東西在擋？你們 CI 裡最久沒抓到真問題的是哪一道，該淡出，還是該演練？</p>
+    <p>最後一頁是參考資料。</p>
+  </aside>
+</section>
+
+<section class="slide" id="p23" data-chapter="第 7 章｜收尾與討論" data-seconds="30">
+  <div class="slide-body">
+    <h2>參考資料</h2>
+    <div class="c8-reads">
+      <div class="c8-read"><b>R1</b><span class="c8-t">Clean AI: Agentic Discipline, Episode 6 — Swarm Forge Demonstration</span><span class="c8-m">Justin Martin、Robert C. Martin｜2026-06-23｜<a href="https://cleancoders.com/episode/agentic-discipline-6" target="_blank" rel="noopener">cleancoders.com/episode/agentic-discipline-6</a></span></div>
+      <div class="c8-read"><b>R2</b><span class="c8-t">Harness engineering for coding agent users</span><span class="c8-m">Birgitta Böckeler｜2026-04-02｜<a href="https://martinfowler.com/articles/harness-engineering.html" target="_blank" rel="noopener">martinfowler.com/articles/harness-engineering.html</a></span></div>
+      <div class="c8-read"><b>R3</b><span class="c8-t">Fitness function-driven development</span><span class="c8-m">Paula Paul、Rosemary Wang｜2019-01-11｜<a href="https://www.thoughtworks.com/insights/articles/fitness-function-driven-development" target="_blank" rel="noopener">thoughtworks.com/insights/articles/fitness-function-driven-development</a></span></div>
+      <div class="c8-read"><b>R4</b><span class="c8-t">The Practical Test Pyramid</span><span class="c8-m">Ham Vocke｜2018-02-26｜<a href="https://martinfowler.com/articles/practical-test-pyramid.html" target="_blank" rel="noopener">martinfowler.com/articles/practical-test-pyramid.html</a></span></div>
+      <div class="c8-read"><b>R5</b><span class="c8-t">Codex-maxxing for long-running work</span><span class="c8-m">OpenAI（Jason Liu 的實務）｜2026-06-22｜<a href="https://openai.com/index/codex-maxxing-long-running-work/" target="_blank" rel="noopener">openai.com/index/codex-maxxing-long-running-work/</a></span></div>
+    </div>
+    <ul class="c8-more">
+      <li><b>Jev</b>：<a href="https://typesafe.ai" target="_blank" rel="noopener">TypeSafe 官網</a>、<a href="https://www.langchain.com/blog/jev-is-now-available-in-langsmith-evals" target="_blank" rel="noopener">LangChain 部落格（2026-09-21）</a>、<a href="https://docs.langchain.com/langsmith/decision-model-evaluator" target="_blank" rel="noopener">LangSmith 文件</a>、<a href="https://github.com/jkudish/jev-mcp" target="_blank" rel="noopener">社群 jev-mcp（jev_verify、jev_gate）</a></li>
+      <li><b>R2 延伸</b>：<a href="https://martinfowler.com/articles/sensors-for-coding-agents.html" target="_blank" rel="noopener">Böckeler〈Maintainability sensors for coding agents〉2026-05-27</a></li>
+      <li><b>Uncle Bob 和 Booch（媒體轉述）</b>：<a href="https://startupfortune.com/uncle-bob-martin-says-he-no-longer-reads-ai-generated-code-and-the-developer-world-is-split/" target="_blank" rel="noopener">Startup Fortune，2026-07-25</a></li>
+      <li><b>Gawande 談清單</b>：<a href="https://www.npr.org/2017/10/30/559996276/the-trick-to-surviving-a-high-stakes-high-pressure-job-try-a-checklist" target="_blank" rel="noopener">NPR Hidden Brain，2017-10-30</a>；<a href="https://hbr.org/podcast/2010/01/using-checklists-to-prevent-fa" target="_blank" rel="noopener">HBR IdeaCast，2010-01-22</a></li>
+      <li><b>今天的資料</b>：都是唯讀分析，來源是本機 Claude Code 對話紀錄、GitHub API（86 個 PR）、看板匯出和 hook<span class="gloss">（觸發腳本）</span> 設定檔</li>
+    </ul>
+  </div>
+  <aside class="notes">
+    <p>五篇指定閱讀的連結都在這一頁，另外也列了 Jev 和 Gawande 的出處。今天的數字都是從我自己的對話紀錄、GitHub API 和看板匯出來的；沒標的都是直接數出來的，估計、推論和宣稱我另外標了。按 N 可以切到筆記模式，會後要看比較方便。我的部分就到這邊，謝謝大家，交給下一位。</p>
+  </aside>
+</section>
+<!-- slide-file: end -->
+
+    </main>
+    <div class="hud">
+      <div class="hud-top">
+        <span class="hud-chapter" id="hud-chapter"></span>
+        <button type="button" class="mode-toggle" id="mode-toggle" title="N 切換模式　S 講者備註（Shift＋S 頁內抽屜）　P 列印　T 計時歸零">筆記模式</button>
+      </div>
+      <div class="hud-page" id="hud-page"></div>
+      <div class="progress" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div>
+    </div>
+  </div>
+</div>
+<aside class="notes-drawer" id="notes-drawer" aria-label="講者備註">
+  <div class="drawer-head">
+    <strong>講者備註</strong>
+    <button type="button" class="drawer-close" id="drawer-close">關閉</button>
+  </div>
+  <div class="speaker-panel" id="drawer-panel"></div>
+</aside>
+<script>
+/* deck.js — 簡報行為（build.py 內嵌進 index.html）。不對外提供 API，只讀 .slide 的屬性。
+ *
+ * 按鍵（簡報模式）：← → PageUp PageDown 空白鍵（Shift＋空白鍵＝上一頁）換頁、Home／End、
+ *   S 講者備註（獨立小視窗；被瀏覽器擋掉就改開頁內抽屜，再按一次 S 關掉抽屜；
+ *   Shift＋S 不開視窗、直接開關頁內抽屜，給只有一個螢幕的時候用）、
+ *   N 切換簡報／筆記模式、P 先切筆記模式再列印（印完回到原來的模式）、T 計時歸零。
+ * 筆記模式只處理 N、P、T，方向鍵等交給瀏覽器正常捲動。
+ * 網址 #p6 對應 id="p6" 的頁；換頁時用 history.replaceState 寫回，重新整理停在同一頁。
+ * 計時：第一次換頁才開始，起點存在 sessionStorage，重新整理不歸零；T 歸零後等下一次換頁再開始。
+ *   講者備註顯示：本頁已過／本頁建議秒數、累計時間／到這頁為止的建議累計
+ *   （＝計時起點那頁到本頁之前的建議秒數，加上本頁已過時間、最多加到本頁的建議秒數），
+ *   以及超前或落後幾秒。
+ * 講者視窗和主畫面用 postMessage 溝通：主畫面重新整理後，講者視窗會自己找回來重新連上。
+ */
+(() => {
+  'use strict';
+
+  const STAGE_W = 1280;
+  const STAGE_H = 720;
+  const KEY = 'rc02-checkers:';                         // sessionStorage 前綴
+  const NS = 'rc02-checkers';                           // postMessage 的識別字
+  const NOTES_WINDOW = 'rc02-checkers-speaker-notes';   // 講者視窗的名字（重開時沿用同一個視窗）
+
+  const body = document.body;
+  const slides = Array.from(document.querySelectorAll('.deck .slide'));
+  if (!slides.length) return;
+
+  const $ = (id) => document.getElementById(id);
+  const viewport = $('viewport');
+  const stage = $('stage');
+  const hudChapter = $('hud-chapter');
+  const hudPage = $('hud-page');
+  const progressBar = $('progress-bar');
+  const modeToggle = $('mode-toggle');
+  const drawerPanel = $('drawer-panel');
+
+  const total = slides.length;
+  const seconds = slides.map((s) => Math.max(0, parseInt(s.dataset.seconds, 10) || 0));
+  const plannedBefore = [0];                            // plannedBefore[i]：第 i 頁之前所有頁的建議秒數
+  seconds.forEach((sec, i) => plannedBefore.push(plannedBefore[i] + sec));
+  const titles = slides.map((s, i) => {
+    const heading = s.querySelector('.slide-body h1, .slide-body h2');
+    const text = heading ? heading.textContent.replace(/\s+/g, ' ').trim() : '';
+    return text || s.id || `第 ${i + 1} 頁`;
+  });
+
+  // ── sessionStorage（無痕模式或被停用時就只記在記憶體裡）────────────────────
+  const store = {
+    get(name) {
+      try { return JSON.parse(sessionStorage.getItem(KEY + name)); } catch (e) { return null; }
+    },
+    set(name, value) {
+      try {
+        if (value === null || value === undefined) sessionStorage.removeItem(KEY + name);
+        else sessionStorage.setItem(KEY + name, JSON.stringify(value));
+      } catch (e) { /* 存不了就算了 */ }
+    },
+  };
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const mmss = (sec) => {
+    const s = Math.max(0, Math.floor(sec));
+    return `${pad(Math.floor(s / 60))}:${pad(s % 60)}`;
+  };
+  const span = (sec) => (sec < 60 ? `${sec} 秒` : `${Math.floor(sec / 60)} 分 ${pad(sec % 60)} 秒`);
+  const esc = (text) => String(text).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+  let current = 0;
+  let mode = 'slides';
+  let drawerOpen = false;
+  let notesWin = null;
+  let notesScrollY = null;                              // 進入筆記模式時的捲動位置
+  let clock = store.get('clock');                       // { start: 毫秒, origin: 計時起點那一頁 }
+  let arrived = store.get('arrived');                   // { id: 目前這頁的 id, at: 到達的毫秒 }
+  if (!clock || typeof clock.start !== 'number' || !(clock.origin >= 0 && clock.origin < total)) clock = null;
+  if (!arrived || typeof arrived.at !== 'number') arrived = null;
+
+  function indexFromHash() {
+    let id = '';
+    try { id = decodeURIComponent(location.hash.slice(1)); } catch (e) { return -1; }
+    const target = id && document.getElementById(id);
+    const slide = target && target.closest('.slide');
+    return slide ? slides.indexOf(slide) : -1;
+  }
+
+  function writeHash(id) {
+    if (!id || location.hash === `#${id}`) return;
+    try {
+      history.replaceState(null, '', `#${id}`);
+    } catch (e) {
+      try { location.replace(`#${id}`); } catch (e2) { /* 只是網址沒更新 */ }
+    }
+  }
+
+  // ── 換頁 ────────────────────────────────────────────────────────────────
+  function show(index, { counts = true } = {}) {
+    const i = Math.max(0, Math.min(total - 1, index));
+    const moved = i !== current;
+    current = i;
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    hudChapter.textContent = slides[i].dataset.chapter || '';
+    hudPage.textContent = `${pad(i + 1)} / ${pad(total)}`;
+    progressBar.style.width = `${((i + 1) / total) * 100}%`;
+    writeHash(slides[i].id);
+    if (counts && moved) {
+      const now = Date.now();
+      if (!clock) {                                     // 第一次換頁：開始計時
+        clock = { start: now, origin: i };
+        store.set('clock', clock);
+      }
+      arrived = { id: slides[i].id, at: now };
+      store.set('arrived', arrived);
+    }
+    renderSpeaker();
+  }
+
+  // 依視窗（扣掉打開的抽屜）把 1280×720 的舞台等比縮放到剛好放得下
+  function fit() {
+    if (mode !== 'slides') return;
+    const box = viewport.getBoundingClientRect();
+    const scale = Math.min(box.width / STAGE_W, box.height / STAGE_H);
+    if (scale > 0) stage.style.setProperty('--scale', String(scale));
+  }
+
+  // ── 模式 ────────────────────────────────────────────────────────────────
+  function applyMode(next) {
+    mode = next;
+    body.classList.toggle('mode-slides', mode === 'slides');
+    body.classList.toggle('mode-notes', mode === 'notes');
+    modeToggle.textContent = mode === 'slides' ? '筆記模式' : '簡報模式';
+    store.set('mode', mode === 'notes' ? 'notes' : null);
+  }
+
+  // 筆記模式裡讀者捲到哪一頁（沒捲動過就是原本那頁）
+  function slideInView() {
+    if (notesScrollY !== null && Math.abs(window.scrollY - notesScrollY) < 2) return current;
+    const line = window.innerHeight * 0.3;
+    let found = 0;
+    for (let k = 0; k < total; k++) {
+      if (slides[k].getBoundingClientRect().top <= line) found = k;
+      else break;
+    }
+    return found;
+  }
+
+  function setMode(next) {
+    if (next === mode) return;
+    if (next === 'slides') {
+      const target = slideInView();
+      applyMode('slides');
+      window.scrollTo(0, 0);
+      fit();
+      show(target);
+    } else {
+      applyMode('notes');
+      slides[current].scrollIntoView({ block: 'start' });
+      notesScrollY = window.scrollY;
+      renderSpeaker();
+    }
+  }
+
+  function printNotes() {
+    const previous = mode;
+    setMode('notes');
+    if (previous !== 'notes') {
+      const restore = () => {
+        window.removeEventListener('afterprint', restore);
+        setMode(previous);
+      };
+      window.addEventListener('afterprint', restore);
+    }
+    window.print();
+  }
+
+  function resetClock() {
+    clock = null;
+    arrived = null;
+    store.set('clock', null);
+    store.set('arrived', null);
+    renderSpeaker();
+  }
+
+  // ── 講者備註（獨立視窗或頁內抽屜共用同一段 HTML）────────────────────────
+  function speakerHtml() {
+    const i = current;
+    const slide = slides[i];
+    const notes = slide.querySelector('.notes');
+    let clockHtml;
+    if (clock) {
+      const now = Date.now();
+      const elapsed = Math.max(0, (now - clock.start) / 1000);
+      const onPage = arrived && arrived.id === slide.id ? Math.max(0, (now - arrived.at) / 1000) : 0;
+      const planStart = Math.max(0, plannedBefore[i] - plannedBefore[clock.origin]);
+      const planNow = planStart + Math.min(onPage, seconds[i]);
+      const planEnd = planStart + seconds[i];
+      const diff = Math.round(planNow - elapsed);       // 正＝超前、負＝落後
+      const status = diff > 0 ? `超前 ${span(diff)}` : diff < 0 ? `落後 ${span(-diff)}` : '準時';
+      clockHtml = `<span>本頁</span><b class="${onPage > seconds[i] ? 'sp-over' : ''}">${mmss(onPage)}</b>`
+        + `<span>建議 ${mmss(seconds[i])}</span>`
+        + `<span>累計</span><b>${mmss(elapsed)}</b>`
+        + `<span>到這頁為止建議 ${mmss(planNow)}（本頁結束時 ${mmss(planEnd)}）</span>`
+        + `<div class="sp-status ${diff < 0 ? 'behind' : 'ahead'}">${status}</div>`;
+    } else {
+      clockHtml = `<span>本頁</span><b>--:--</b><span>建議 ${mmss(seconds[i])}</span>`
+        + '<div class="sp-status idle">還沒開始計時：換到下一頁就開始（T 可隨時歸零）</div>';
+    }
+    const next = i + 1 < total ? `下一頁：${esc(titles[i + 1])}` : '這是最後一頁';
+    return `<div class="sp-meta"><span class="sp-page">${pad(i + 1)} / ${pad(total)}</span>`
+      + `<span>${esc(slide.dataset.chapter || '')}</span></div>`
+      + `<div class="sp-title">${esc(titles[i])}</div>`
+      + `<div class="sp-clock">${clockHtml}</div>`
+      + `<div class="sp-notes">${notes ? notes.innerHTML : ''}</div>`
+      + `<div class="sp-next">${next}</div>`
+      + '<div class="sp-keys">← → 換頁　T 計時歸零　N 筆記模式</div>';
+  }
+
+  function renderSpeaker() {
+    if (notesWin && notesWin.closed) notesWin = null;
+    const inDrawer = drawerOpen && mode === 'slides';
+    if (!inDrawer && !notesWin) return;
+    const html = speakerHtml();
+    if (inDrawer) drawerPanel.innerHTML = html;
+    if (notesWin) {
+      try { notesWin.postMessage({ ns: NS, type: 'render', html }, '*'); } catch (e) { notesWin = null; }
+    }
+  }
+
+  // 這個函式會被轉成字串、在講者視窗裡執行，所以不能用到外面的變數
+  function speakerWindowMain(ns) {
+    const panel = document.getElementById('sp');
+    let last = Date.now();
+    const navKeys = ['ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', ' ', 'Home', 'End'];
+    window.addEventListener('message', (e) => {
+      const m = e.data;
+      if (!m || m.ns !== ns || m.type !== 'render' || e.source !== window.opener) return;
+      panel.innerHTML = m.html;
+      last = Date.now();
+      document.body.classList.remove('stale');
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || !window.opener) return;
+      window.opener.postMessage({ ns, type: 'key', key: e.key, code: e.code, shiftKey: e.shiftKey }, '*');
+      if (navKeys.includes(e.key)) e.preventDefault();
+    });
+    setInterval(() => {
+      if (Date.now() - last < 2500) return;
+      document.body.classList.add('stale');               // 主畫面沒回應：一直打招呼直到它回來
+      if (window.opener) window.opener.postMessage({ ns, type: 'hello' }, '*');
+    }, 1000);
+  }
+
+  function buildNotesWindow(doc) {
+    doc.title = `講者備註｜${document.title}`;
+    doc.documentElement.lang = 'zh-Hant-TW';
+    const style = doc.createElement('style');
+    style.textContent = $('deck-style').textContent;
+    doc.head.appendChild(style);
+    doc.body.className = 'speaker-window';
+    doc.body.innerHTML = '<p class="sp-stale">主畫面沒有回應：回到主畫面按 S 重新連上。</p>'
+      + '<div class="speaker-panel" id="sp"></div>';
+    const script = doc.createElement('script');
+    script.textContent = `(${speakerWindowMain.toString()})(${JSON.stringify(NS)});`;
+    doc.body.appendChild(script);
+  }
+
+  // 開講者視窗；開不了（被擋）回傳 false
+  function openNotesWindow() {
+    if (notesWin && !notesWin.closed) {
+      notesWin.focus();
+      return true;
+    }
+    let w = null;
+    try { w = window.open('', NOTES_WINDOW, 'popup,width=760,height=820'); } catch (e) { w = null; }
+    if (!w || w.closed) return false;
+    try {
+      if (!w.document.getElementById('sp')) buildNotesWindow(w.document);
+    } catch (e) {
+      // 主畫面重新整理前開的舊視窗讀不到內容，但它自己會收 postMessage，照樣能用
+    }
+    notesWin = w;
+    renderSpeaker();
+    return true;
+  }
+
+  function setDrawer(open) {
+    drawerOpen = open;
+    body.classList.toggle('drawer-open', open);
+    store.set('drawer', open ? 1 : null);
+    fit();
+    renderSpeaker();
+  }
+
+  function toggleSpeaker() {
+    if (drawerOpen) setDrawer(false);
+    else if (!openNotesWindow()) setDrawer(true);       // 彈出視窗被擋：改用頁內抽屜
+  }
+
+  // ── 按鍵 ────────────────────────────────────────────────────────────────
+  // 中文輸入法下字母鍵可能回報 'Process' 或注音符號，就改看實體鍵位
+  function keyOf(key, code) {
+    const k = key || '';
+    if (/^[a-z]$/i.test(k)) return k.toLowerCase();
+    const letter = /^Key([A-Z])$/.exec(code || '');
+    if (letter && (k === 'Process' || k === 'Unidentified' || (k.length === 1 && k !== ' '))) {
+      return letter[1].toLowerCase();
+    }
+    return k;
+  }
+
+  function act(key, shift, fromNotesWindow) {
+    switch (key) {
+      case 'n': setMode(mode === 'slides' ? 'notes' : 'slides'); return true;
+      case 't': resetClock(); return true;
+      case 'p': if (fromNotesWindow) return false; printNotes(); return true;
+      default: break;
+    }
+    if (mode !== 'slides') return false;                // 筆記模式：其他按鍵交給瀏覽器捲動
+    switch (key) {
+      case 'ArrowRight': case 'PageDown': show(current + 1); return true;
+      case 'ArrowLeft': case 'PageUp': show(current - 1); return true;
+      case ' ': show(current + (shift ? -1 : 1)); return true;
+      case 'Home': show(0); return true;
+      case 'End': show(total - 1); return true;
+      case 's':
+        if (fromNotesWindow) return false;
+        if (shift) setDrawer(!drawerOpen);              // Shift＋S：只有一個螢幕時直接用頁內抽屜
+        else toggleSpeaker();
+        return true;
+      default: return false;
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.isComposing) return;
+    const t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    const key = keyOf(e.key, e.code);
+    if (e.repeat && 'nspt'.includes(key) && key.length === 1) return;
+    if (act(key, e.shiftKey, false)) e.preventDefault();
+  });
+
+  window.addEventListener('message', (e) => {
+    const m = e.data;
+    if (!m || m.ns !== NS || !e.source || e.source === window) return;
+    let ours = e.source === notesWin;
+    try { ours = ours || e.source.opener === window; } catch (err) { /* 讀不到就當不是 */ }
+    if (!ours) return;
+    if (m.type === 'hello') {                           // 主畫面重新整理後，講者視窗回來報到
+      notesWin = e.source;
+      renderSpeaker();
+    } else if (m.type === 'key') {
+      act(keyOf(m.key, m.code), Boolean(m.shiftKey), true);
+    }
+  });
+
+  modeToggle.addEventListener('click', () => {
+    setMode(mode === 'slides' ? 'notes' : 'slides');
+    modeToggle.blur();                                  // 不然空白鍵會再按到這個按鈕
+  });
+  $('drawer-close').addEventListener('click', () => setDrawer(false));
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', () => {
+    const i = indexFromHash();
+    if (i < 0 || i === current) return;
+    if (mode === 'slides') show(i);
+    else { current = i; renderSpeaker(); }
+  });
+  setInterval(renderSpeaker, 1000);
+
+  // ── 啟動 ────────────────────────────────────────────────────────────────
+  // 留空的 .legend 補上三色圖例
+  document.querySelectorAll('.legend').forEach((el) => {
+    if (!el.children.length && !el.textContent.trim()) {
+      el.innerHTML = '<span class="human">人</span><span class="agent">agent</span><span class="machine">機器</span>';
+    }
+  });
+  // 參考資料的外部連結開在新分頁，不要把簡報本身換掉
+  document.querySelectorAll('.deck a[href]').forEach((a) => {
+    if (/^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(a.getAttribute('href'))) {
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    }
+  });
+
+  const start = indexFromHash();
+  current = start >= 0 ? start : 0;
+  if (clock && (!arrived || arrived.id !== slides[current].id)) {
+    arrived = { id: slides[current].id, at: Date.now() };
+    store.set('arrived', arrived);
+  }
+  applyMode(store.get('mode') === 'notes' ? 'notes' : 'slides');
+  show(current, { counts: false });
+  if (mode === 'slides') {
+    fit();
+    if (store.get('drawer')) setDrawer(true);
+  } else {
+    slides[current].scrollIntoView({ block: 'start' });
+    notesScrollY = window.scrollY;
+  }
+})();
+
+</script>
+</body>
+</html>
