@@ -1043,7 +1043,7 @@ body.speaker-window.stale .sp-stale { display: block; }
 </section>
 
 <!-- slide-file: 04-soft-hard.html -->
-<!-- 第 2 章｜規則寫了，AI 不一定照做（P8–P9）。數字來源：research/claude-code-evidence.md §5.1（skill 觸發次數、對話期間 135 天、使用者層級 hook 1 支）；research/github-evidence.md §0 第 3、4 點（自建 Claude review 232 次）；research/github-author-items.md（ai-context 裡有 code review 的 SOP）；research/readings-digest.md §2（Harness engineering）。P8 的規則原文、「只被索引檔提到」已對照本機檔案與 transcript。改版前的「執行層級階梯」那頁，併進 05-hard-rules.html 的第一頁（現在的 P10）。 -->
+<!-- 第 2 章｜規則寫了，AI 不一定照做（P8）。2026-10-29 講者覺得難說明：原本的四格那頁（誰觸發 × 誰判定）拿掉，重點併進 P8 結尾，R2 讀物移到下一章第一頁。數字來源：research/claude-code-evidence.md §5.1（skill 觸發次數、對話期間 135 天、使用者層級 hook 1 支）；research/github-evidence.md §0 第 3、4 點（自建 Claude review 232 次）；research/github-author-items.md（ai-context 裡有 code review 的 SOP）；research/readings-digest.md §2（Harness engineering）。P8 的規則原文、「只被索引檔提到」已對照本機檔案與 transcript。改版前的「執行層級階梯」那頁，併進 05-hard-rules.html 的第一頁（現在的 P9）。 -->
 <style>
   /* 第 2 章專用樣式：class 一律加 c4- 前綴，只補版面，不改共用元件 */
 
@@ -1053,14 +1053,6 @@ body.speaker-window.stale .sp-stale { display: block; }
   .c4-hero { display: flex; flex-direction: column; justify-content: center; }
   .c4-hero b { font-size: 96px; line-height: 1.05; }
 
-  /* P9：2×2（每格自己標座標，軸標怎麼畫都讀得懂） */
-  .c4-quad .cell { display: flex; flex-direction: column; gap: 6px; }
-  .c4-qhead { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
-  .c4-qhead small { color: var(--muted, #5d687b); font-size: 18px; }
-  .c4-quad .c4-qwhat { color: var(--ink, #172033); font-size: 22px; font-weight: 700; line-height: 1.4; }
-  .c4-quad .c4-qex { font-size: 20px; line-height: 1.4; }
-  .c4-reading { font-size: 20px; line-height: 1.5; }
-  .c4-reading .reading { margin-right: 8px; }
 
   /* 窄螢幕讀筆記：和共用的 .grid 一樣改成一欄（簡報模式與列印維持舞台排版） */
   @media screen and (max-width: 760px) {
@@ -1068,7 +1060,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   }
 </style>
 
-<section class="slide" id="p8" data-chapter="第 2 章｜規則寫了，AI 不一定照做" data-seconds="90">
+<section class="slide" id="p8" data-chapter="第 2 章｜規則寫了，AI 不一定照做" data-seconds="100">
   <div class="slide-body">
     <div class="eyebrow">那改成寫規則，叫 AI 做完自己驗證呢？</div>
     <h2>我寫了「必須執行、不得跳過」</h2>
@@ -1076,83 +1068,33 @@ body.speaker-window.stale .sp-stale { display: block; }
     <div class="c4-top">
       <div>
         <blockquote class="quote">每個實作階段完成後（或整體任務完成後），必須執行下列 skill，不得跳過<cite>我的實作紀律檔；「下列」指的是 verification-before-completion 和 requesting-code-review</cite></blockquote>
-        <p class="c4-sub">只有一份索引檔提到它，沒有任何專案的 AGENTS.md<span class="gloss">（給 AI 看的專案規則檔）</span> 或 CLAUDE.md 載入它</p>
+        <p class="c4-sub">這份規則檔，AI 根本沒讀到</p>
       </div>
       <div class="stat c4-hero"><b>0 次</b><span>這兩個 skill<span class="gloss">（技能）</span> 在 135 天裡（6/16–10/28）被觸發的次數</span></div>
     </div>
     <div class="spacer"></div>
-    <div class="thesis">寫在 markdown<span class="gloss">（純文字格式）</span> 裡的「必須」，還是軟規則</div>
+    <div class="thesis">寫成文字的規則，要 AI 自己讀到、自己想起來才會跑</div>
   </div>
   <aside class="notes">
     <p>我真的這樣做過。</p>
     <p>我在 ai-context<span class="gloss">（AI 工作脈絡資料夾）</span> 放了幾份寫給 AI 看的規則，像 code review<span class="gloss">（程式碼審查）</span> 的 SOP<span class="gloss">（標準作業程序）</span> 就在裡面。其中一份是實作紀律檔，講 AI 實作時要守的事，標題就寫「強制規則」。畫面上這條是說：每個實作階段做完，必須跑 verification-before-completion<span class="gloss">（完成前先驗證）</span> 跟 requesting-code-review<span class="gloss">（請人審查程式碼）</span>，不得跳過。一個是做完先驗證，一個是做完請 review。我的想法很簡單，AI 說做完之前，要先驗證過、也被 review 過。</p>
-    <p>寫得夠兇了吧？我把 135 天的對話紀錄翻過一遍，這兩個 skill 被觸發 0 次。原因是只有一份索引檔提到這份檔，沒有任何專案的 AGENTS.md 或 CLAUDE.md 會載入它，AI 根本沒讀到。規則寫了，AI 不跑，就跟沒寫一樣。</p>
-    <p>所以寫在 markdown 裡的「必須」，還是軟規則。就算 AI 讀到了，也不一定會照做。那它為什麼會略過？</p>
-  </aside>
-</section>
-
-<section class="slide" id="p9" data-chapter="第 2 章｜規則寫了，AI 不一定照做" data-seconds="90">
-  <div class="slide-body">
-    <div class="eyebrow">為什麼會略過：差在誰觸發、誰判定</div>
-    <h2>軟和硬，差在誰決定規則有沒有被執行</h2>
-    <div class="quad c4-quad" data-x="觸發：AI 想到才做 → 系統一定觸發" data-y="判定：AI 判斷 → 程式判定">
-      <div class="cell">
-        <p class="c4-qhead"><span class="tag medium">半軟</span><small>AI 想到才做 × 程式判定</small></p>
-        <p class="c4-qwhat">叫 AI 自己記得跑測試</p>
-        <p class="c4-qex">verification-before-completion<span class="gloss">（完成前先驗證）</span>：0 次</p>
-      </div>
-      <div class="cell">
-        <p class="c4-qhead"><span class="tag high">硬</span><small>系統一定觸發 × 程式判定</small></p>
-        <p class="c4-qwhat">hook<span class="gloss">（觸發腳本）</span> 擋下、CI 必過</p>
-        <p class="c4-qex">我設的 hook：1 支，擋品質的 0 支</p>
-      </div>
-      <div class="cell">
-        <p class="c4-qhead"><span class="tag low">軟</span><small>AI 想到才做 × AI 判斷</small></p>
-        <p class="c4-qwhat">skill<span class="gloss">（技能）</span> 叫 AI 自己去 review<span class="gloss">（審查）</span></p>
-        <p class="c4-qex">requesting-code-review<span class="gloss">（請人審查程式碼）</span>：0 次</p>
-      </div>
-      <div class="cell">
-        <p class="c4-qhead"><span class="tag medium">半硬</span><small>系統一定觸發 × AI 判斷</small></p>
-        <p class="c4-qwhat">每個 PR 自動跑 AI reviewer<span class="gloss">（AI 審查者）</span>、每天的排程</p>
-        <p class="c4-qex">自建 Claude review 在我的 PR 上自動跑了 232 次</p>
-      </div>
-    </div>
-    <p class="c4-reading"><span class="reading">R2 Harness engineering</span>判定這一軸，就是它分的 computational（程式判定）和 inferential（AI 判斷）。</p>
-  </div>
-  <aside class="notes">
-    <p>我覺得差在兩個問題。第一，要不要做：是 AI 想到才做，還是系統一定會觸發。第二，做得對不對：是 AI 自己判斷，還是程式判定。兩個一交叉，就是這四格。</p>
-    <p>剛剛那兩個 skill 都在左邊，要 AI 想到才會跑。requesting-code-review 在左下，最軟，對不對也是 AI 自己說了算。verification-before-completion 在左上，測試是程式判的，可是要 AI 想到才會跑，一樣 0 次。右下是半硬：我們自建的 Claude review 每個 PR 都自動跑，第 1 章那 232 次就是它，一定會跑，但判斷還是 AI。右上最硬：hook 擋下、CI 必過。這格我要誠實，我設的 hook 只有 1 支，還是記錄用的，沒有一支在擋品質。</p>
-    <p>Harness engineering 也是這樣分，它還提醒：只有事後檢查，agent<span class="gloss">（AI 代理）</span> 會一直犯同樣的錯；只有事前引導，規則寫了也不知道有沒有用。所以我覺得不用每條都變硬，軟硬要搭配，但重要的那幾條要往右上搬。那要怎麼做硬？</p>
+    <p>寫得夠兇了吧？我把 135 天的對話紀錄翻過一遍，這兩個 skill 被觸發 0 次。後來才發現，這份規則檔根本沒有被載入，AI 連讀都沒讀到。規則寫了，AI 不跑，就跟沒寫一樣。</p>
+    <p>我覺得差在兩件事：誰叫它跑，誰判斷它做得對不對。寫成文字的規則，這兩件事都交給 AI 自己；就算 AI 讀到了，也不一定想得起來。那要怎麼做硬？</p>
   </aside>
 </section>
 
 <!-- slide-file: 05-hard-rules.html -->
-<!-- 第 3 章｜把重要的規則做硬（P10–P12）。數字來源：research/claude-code-evidence.md §2.1（AskUserQuestion 06–10 月 149 次）、卡 2（7/8 board-sync 自己刪節點、使用者原話、SKILL.md 紅線、紅隊抓到跳過工具呼叫攔不住、server 大量刪除要帶雜湊重送、bench 6/8 與 3/8、haiku 宣稱已完成卻沒有執行 apply、寫錯欄位自報成功、改由腳本 fail-stop）；research/github-evidence.md §0 第 9 點、§2.2（驗證 workflow 檢查什麼、board-sync 所在的共用 skill 庫）、§2.4、故事卡 G（1/14、8/31、7 個半月、27 個 PR、8 個是我的、2 個真缺陷、commit 訊息原文）。改版前的階梯那頁併進現在的 P10；改版前的「驗證結果實例」那頁刪掉，只留 board-sync bench 一例併進現在的 P12。P12 的 Jev 查證網址見 research/verification-sources.md。 -->
+<!-- 第 3 章｜把重要的規則做硬（P9–P10）。2026-10-29 講者看不懂「7 個半月沒跑」那頁（同事的驗證 workflow），拿掉；P10 的案例和流程改成白話。數字來源：research/claude-code-evidence.md §2.1（AskUserQuestion 06–10 月 149 次）、卡 2（7/8 board-sync 自己刪節點、使用者原話、SKILL.md 紅線、紅隊抓到跳過工具呼叫攔不住、server 大量刪除要帶雜湊重送、bench 6/8 與 3/8、haiku 宣稱已完成卻沒有執行 apply、寫錯欄位自報成功、改由腳本 fail-stop）；research/github-evidence.md §0 第 9 點、§2.2（驗證 workflow 檢查什麼、board-sync 所在的共用 skill 庫）、§2.4、故事卡 G（1/14、8/31、7 個半月、27 個 PR、8 個是我的、2 個真缺陷、commit 訊息原文）。改版前的階梯那頁併進現在的 P9；改版前的「驗證結果實例」那頁刪掉，只留 board-sync bench 一例併進現在的 P10。P10 的 Jev 查證網址見 research/verification-sources.md。 -->
 <style>
   /* 第 3 章專用樣式：class 一律加 c5- 前綴，只補版面，不改共用元件 */
 
-  /* P10：四種硬度用共用的 .ladder（DOM 由軟到硬寫，畫面由下而上越硬）；下面一行是升級的例子 */
+  /* P9：四種硬度用共用的 .ladder（DOM 由軟到硬寫，畫面由下而上越硬）；下面一行是升級的例子 */
   .c5-up { margin: 0; padding: 12px 20px; border: 1.5px dashed var(--primary, #3157d5); border-radius: 12px; color: var(--ink, #172033); font-size: 20px; line-height: 1.45; }
   .c5-up b { margin-right: 12px; color: var(--primary, #3157d5); }
 
-  /* P11：沉默的時間軸（單一序列，不需圖例；數值也寫在標籤與備註裡） */
-  .c5-fig { margin: 0; }
-  .c5-fighead { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 2px 0 0; font-size: 20px; line-height: 1.4; }
-  .c5-team { display: inline-block; padding: 1px 10px; border: 1px solid var(--line, #dfe5ef); border-radius: 999px; background: var(--paper, #fff); color: var(--muted, #5d687b); font-size: 18px; font-weight: 600; white-space: nowrap; }
-  .c5-tl { display: block; width: 100%; height: auto; margin: 4px 0 0; }
-  .c5-tl .c5-axis, .c5-tl .c5-ticks line { stroke: var(--muted, #5d687b); stroke-opacity: .55; stroke-width: 1.5; }
-  .c5-tl .c5-lead { stroke: var(--muted, #5d687b); stroke-opacity: .7; stroke-width: 1; }
-  .c5-tl .c5-band { fill: var(--danger-soft, #fff0ee); }
-  .c5-tl .c5-run { fill: var(--machine, #0f766e); stroke: var(--paper, #fff); stroke-width: 2; }
-  .c5-tl text { fill: var(--ink, #172033); }
-  .c5-tl .c5-lbl { font-size: 20px; font-weight: 700; }
-  .c5-tl .c5-in { font-size: 20px; }
-  .c5-tl .c5-mon text { fill: var(--muted, #5d687b); font-size: 19px; }
-  .c5-p18 blockquote.quote { margin-top: 6px; }
-  .c5-p18 blockquote.quote cite { display: inline; margin-left: 12px; }
 
-  /* P12：一個實例＋交接時附上驗證結果的流程（5 個節點）；Jev 一句話和圖例放在流程下方同一行 */
-  .flow.c5-flow { display: grid; grid-template-columns: minmax(0, .9fr) 24px minmax(0, 1fr) 24px minmax(0, 1.2fr) 24px minmax(0, 1.2fr) 24px minmax(0, 1.15fr); gap: 6px; align-items: stretch; }
+  /* P10：一個實例＋交接時附上驗證結果的流程（4 個節點）；Jev 一句話和圖例放在流程下方同一行 */
+  .flow.c5-flow { display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr) 24px minmax(0, 1fr) 24px minmax(0, 1.4fr); gap: 6px; align-items: stretch; }
   .c5-flow .node { padding: 10px 8px; }
   .c5-flow .c5-key { box-shadow: inset 0 0 0 2px var(--machine, #0f766e); }
   .c5-legend-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 16px; margin-top: 8px; }
@@ -1165,9 +1107,10 @@ body.speaker-window.stale .sp-stale { display: block; }
   }
   /* 2026-10-29 加中文翻譯後騰空間：字寬加 5% 也不會切到底 */
   .slide-body.c5-handoff-body { gap: 16px; }
+  .c5-reading { margin: 0; color: var(--muted, #5d687b); font-size: 18px; line-height: 1.4; }
 </style>
 
-<section class="slide" id="p10" data-chapter="第 3 章｜把重要的規則做硬" data-seconds="90">
+<section class="slide" id="p9" data-chapter="第 3 章｜把重要的規則做硬" data-seconds="100">
   <div class="slide-body">
     <div class="eyebrow">怎麼做硬：四種硬度，同樣的錯犯第二次就往上升一級</div>
     <h2>四種硬度：越上面，越不靠 AI 記得</h2>
@@ -1179,86 +1122,50 @@ body.speaker-window.stale .sp-stale { display: block; }
       <div class="rung"><b>做不到</b><span>權限 deny<span class="gloss">（拒絕）</span>、不給憑證，AI 想做也做不了</span></div>
     </div>
     <p class="c5-up"><b>例子</b>AI 刪資料前要先問我：口頭糾正、寫進規則、綁進 skill 的流程（6–10 月 AI 停下來問我 149 次），最後由系統擋下</p>
+    <p class="c5-reading"><span class="reading">R2 Harness engineering</span>也把檢查分成兩種：程式判定的便宜又穩定，AI 判斷的比較貴，每次結果還可能不同</p>
     <div class="spacer"></div>
   </div>
   <aside class="notes">
     <p>要做硬，我把做法分成四種，越上面越硬。最下面是會被提醒，寫在 CLAUDE.md、skill 裡，上一章那條 0 次的規則就是這種。再上去是一定會被審，像每個 PR 自動跑的 AI reviewer。再上去是會被擋下，hook、CI 必過，沒過就不能往下走。最上面是做不到，不給權限、不給憑證，AI 想做也做不了。</p>
-    <p>我不會一開始就全部做硬，同樣的錯犯第二次，就往上升一級。例子是 AI 刪資料前要先問我。7 月 8 號我測 board-sync，就是讓 AI 改看板的那個 skill，叫它刪節點，它沒問我要刪什麼就自己刪了。我回它：新增會給使用者確認後才送出，刪除不也應該一樣嗎？接著寫進 SKILL.md<span class="gloss">（技能說明檔）</span> 當紅線，再綁進流程，刪之前 AI 要停下來問我，這就是一定會被審。6 到 10 月，AI 像這樣停下來問我一共 149 次。可是我請另一個 AI 當紅隊來挑，它抓到 AI 乾脆不呼叫問我的那個工具，也沒有東西攔得住。所以再升一級，由 server<span class="gloss">（伺服器）</span> 擋下：大量刪除要帶雜湊重送，不然回 409。</p>
-    <p>可是做硬了，它就一定有在跑嗎？</p>
+    <p>Harness engineering 那篇也這樣分：程式判定的檢查便宜又穩定，AI 判斷的比較貴，每次結果還可能不同。所以重要的那幾條，要往上搬。</p>
+    <p>我不會一開始就全部做硬，同樣的錯犯第二次，就往上升一級。例子是 AI 刪資料前要先問我。7 月 8 號我測 board-sync，就是讓 AI 改看板的那個 skill，叫它刪節點，它沒問我要刪什麼就自己刪了。我回它：新增會給使用者確認後才送出，刪除不也應該一樣嗎？接著寫進 SKILL.md<span class="gloss">（技能說明檔）</span> 當紅線，再綁進流程，刪之前 AI 要停下來問我，這就是一定會被審。6 到 10 月，AI 像這樣停下來問我一共 149 次。可是我請另一個 AI 當紅隊來挑，它抓到 AI 乾脆不呼叫問我的那個工具，也沒有東西攔得住。所以再升一級，最後改由伺服器擋下大量刪除。</p>
+    <p>可是 AI 說它做完了，我怎麼知道它真的做了？</p>
   </aside>
 </section>
 
-<section class="slide" id="p11" data-chapter="第 3 章｜把重要的規則做硬" data-seconds="90">
-  <div class="slide-body c5-p18">
-    <div class="eyebrow">但做硬了，也可能根本沒在跑</div>
-    <h2>7 個半月沒跑，也沒有紅燈</h2>
-    <div class="spacer"></div>
-    <figure class="c5-fig">
-      <p class="c5-fighead"><b>團隊的一支驗證 workflow<span class="gloss">（工作流程）</span>：</b>檢查共用 skill<span class="gloss">（技能）</span> 庫的目錄結構和登記。資料夾改名後，路徑條件對不上，它就不會被觸發<span class="c5-team">團隊經驗</span></p>
-      <svg class="c5-tl" viewBox="0 0 1120 114" role="img" aria-labelledby="c5-tl-title">
-        <title id="c5-tl-title">2026 年 1 月 14 日最後一次執行，到 8 月 31 日才再執行；中間 0 次，期間合併 27 個 PR</title>
-        <line class="c5-axis" x1="40" y1="82" x2="1080" y2="82"/>
-        <g class="c5-ticks">
-          <line x1="60" y1="82" x2="60" y2="89"/><line x1="173.6" y1="82" x2="173.6" y2="89"/><line x1="276.1" y1="82" x2="276.1" y2="89"/><line x1="389.7" y1="82" x2="389.7" y2="89"/><line x1="499.6" y1="82" x2="499.6" y2="89"/><line x1="613.1" y1="82" x2="613.1" y2="89"/><line x1="723" y1="82" x2="723" y2="89"/><line x1="836.6" y1="82" x2="836.6" y2="89"/><line x1="950.1" y1="82" x2="950.1" y2="89"/><line x1="1060" y1="82" x2="1060" y2="89"/>
-        </g>
-        <rect class="c5-band" x="116" y="48" width="822" height="34" rx="6"><title>1/14 到 8/31：0 次執行，期間合併 27 個 PR（8 個是我的）</title></rect>
-        <text class="c5-in" x="527" y="71" text-anchor="middle">7 個半月 0 次執行，期間合併 27 個 PR（8 個是我的）</text>
-        <line class="c5-lead" x1="108" y1="41" x2="108" y2="73"/>
-        <line class="c5-lead" x1="946" y1="41" x2="946" y2="73"/>
-        <circle class="c5-run" cx="108" cy="82" r="8"><title>1/14 最後一次執行</title></circle>
-        <circle class="c5-run" cx="946" cy="82" r="8"><title>8/31 同事修好，重新執行</title></circle>
-        <text class="c5-lbl" x="96" y="34">1/14 最後一次執行</text>
-        <text class="c5-lbl" x="958" y="34" text-anchor="end">8/31 同事修好，當天抓到 2 個真缺陷</text>
-        <g class="c5-mon">
-          <text x="116.8" y="108" text-anchor="middle">1 月</text><text x="224.9" y="108" text-anchor="middle">2 月</text><text x="332.9" y="108" text-anchor="middle">3 月</text><text x="444.7" y="108" text-anchor="middle">4 月</text><text x="556.4" y="108" text-anchor="middle">5 月</text><text x="668.1" y="108" text-anchor="middle">6 月</text><text x="779.8" y="108" text-anchor="middle">7 月</text><text x="893.4" y="108" text-anchor="middle">8 月</text><text x="1005.1" y="108" text-anchor="middle">9 月</text>
-        </g>
-      </svg>
-      <blockquote class="quote">Silent absence, not a red build, is why nobody noticed.<cite>同事修好它時的 commit 訊息，8/31</cite></blockquote>
-    </figure>
-    <div class="spacer"></div>
-    <div class="thesis">Checker<span class="gloss">（檢查機制）</span> 沒在跑不會亮紅燈，所以每一道都要看得出它有沒有在跑</div>
-  </div>
-  <aside class="notes">
-    <p>做硬了，也可能根本沒在跑。講一個團隊的例子。我們團隊有一個共用的 skill 庫，board-sync 也放在那裡。庫裡有一支驗證 workflow，改到 skill 就會自動跑，檢查目錄結構對不對、有沒有登記。系統一定觸發、程式判定，照上一章的四格，它在最硬的右上角。</p>
-    <p>1 月有一次重構，把資料夾改了名字，可是 workflow 的路徑條件還寫著舊名字。結果從 1 月 14 號到 8 月 31 號，7 個半月一次都沒觸發，中間合併了 27 個 PR，8 個是我的，我也完全沒發現。它沒跑，就不會變紅，所以一直沒人注意到。8 月 31 號同事修好它，當天就抓到 2 個真缺陷，其中一支 skill 從來沒登記，根本裝不起來。同事的修法是拿掉路徑條件，每次都跑，一次大約 15 秒。commit<span class="gloss">（提交）</span> 訊息裡那句就是在講這件事：它沒有變紅，只是安靜地不見了。</p>
-    <p>所以每一道 Checker，我都要看得出它有沒有在跑。AI 也一樣，它跟我說做完了，我怎麼知道它真的跑過驗證？</p>
-  </aside>
-</section>
 
-<section class="slide" id="p12" data-chapter="第 3 章｜把重要的規則做硬" data-seconds="90">
+<section class="slide" id="p10" data-chapter="第 3 章｜把重要的規則做硬" data-seconds="90">
   <div class="slide-body c5-handoff-body">
     <div class="eyebrow">所以 AI 說做完了還不算</div>
     <h2>交接時附上驗證結果</h2>
     <div class="card">
-      <strong>board-sync 發版前的 benchmark<span class="gloss">（基準測試）</span>：AI 說做完了，卻沒有做</strong>
-      <p>同一版本量兩次，8 格只過 6 格、3 格，失敗都是 haiku<span class="gloss">（較小的 Claude 模型）</span>「宣稱已完成卻沒有執行 apply」；<br>寫錯欄位也自報成功，所以改由腳本判定，失敗就停。</p>
+      <strong>board-sync 的測試題：AI 說做完了，卻沒有做</strong>
+      <p>我請 AI 跑一組固定的測試題，它說做完了，有幾題其實根本沒寫進看板；<br>更早還有一次，它把字寫進錯的地方，也跟我說成功。</p>
     </div>
     <div>
       <div class="flow c5-flow">
         <div class="node human">規則<small>我寫：<br>做完 X 要跑 Y</small></div>
         <div class="arrow">→</div>
-        <div class="node machine">系統觸發 Y<small>hook<span class="gloss">（觸發腳本）</span>、CI、排程<br>不靠 AI 想到</small></div>
+        <div class="node machine">系統自動跑<small>不靠 AI 想到</small></div>
         <div class="arrow">→</div>
-        <div class="node machine c5-key">驗證結果<small>commit SHA<span class="gloss">（提交的雜湊值）</span>、測試數<br>系統寫，AI 改不到</small></div>
+        <div class="node machine c5-key">系統留下結果<small>AI 改不到</small></div>
         <div class="arrow">→</div>
-        <div class="node machine">程式先檢查<small>SHA 對得上？<br>測試數 &gt; 0？</small></div>
-        <div class="arrow">→</div>
-        <div class="node agent">Jev 這類工具<small>下一個環節快速判斷：<br>真的跑過驗證嗎？</small></div>
+        <div class="node agent">下一關先看結果<small>再用 Jev 這類工具快速判斷：<br>真的跑過驗證嗎？</small></div>
       </div>
       <div class="c5-legend-row"><p class="c5-jev">Jev：只回判定、不寫字的模型</p><div class="legend"><span class="human">人</span><span class="agent">agent</span><span class="machine">機器</span></div></div>
     </div>
     <div class="thesis">到這裡的答案 2：重要的規則不能靠 AI 記得：<br>觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果</div>
   </div>
   <aside class="notes">
-    <p>我自己就遇過 AI 說做完了，卻沒有做。board-sync 每次發版前，我都會用 benchmark 跑一組固定的情境題，看它有沒有變慢、變壞。有一次同一個版本量兩次，8 格只過 6 格、3 格，失敗都是 haiku 說做完了，卻沒有執行 apply<span class="gloss">（套用）</span>，也就是根本沒寫進看板。更早還有一次，它把字寫進錯的欄位，也跟我說成功。後來改由腳本判定，失敗就停。</p>
-    <p>所以 AI 說做完了，我不收，要附上驗證結果。規則我來寫；觸發交給系統，hook、CI、排程，不靠 AI 想到；跑完由系統留下驗證結果，像 commit SHA、exit code<span class="gloss">（結束碼）</span>、測了幾個，AI 改不到。下一個環節先用程式檢查，SHA 對不對、測試數是不是大於 0。程式判斷不了的，我想用 Jev 這類工具快速判斷，提交的內容是不是真的跑過驗證。Jev 是只回判定、不寫字的模型，廠商說又快又便宜，我還沒驗過。</p>
+    <p>我自己就遇過 AI 說做完了，卻沒有做。board-sync 是讓 AI 更新看板的 skill<span class="gloss">（技能）</span>，每次發版前，我都會請它跑一組固定的測試題，看它有沒有變慢、變壞。有一次它說做完了，可是有幾題根本沒寫進看板。更早還有一次，它把字寫進錯的地方，也跟我說成功。</p>
+    <p>所以 AI 說做完了，我不收，要附上驗證結果。規則我來寫；什麼時候跑交給系統，不靠 AI 想到；跑完由系統留下結果，AI 改不到。下一關先看結果對不對，程式判斷不了的，我想用 Jev 這類工具快速判斷，提交的內容是不是真的跑過驗證。Jev 是只回判定、不寫字的模型，廠商說又快又便宜，我還沒驗過。</p>
     <p>重要的規則，不能靠 AI 記得。可是規則和檢查越做越多，又會遇到另一個問題。</p>
   </aside>
 </section>
 
 <!-- slide-file: 06-lifecycle.html -->
 <style>
-/* 第 4 章（P13–P16）專用樣式：class 一律 c6- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
+/* 第 4 章（P11–P14）專用樣式：class 一律 c6- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
 .c6-split { display: grid; grid-template-columns: 1.45fr 1fr; gap: 28px; align-items: center; }
 .c6-stats { gap: 10px; }
 .c6-stats .stat { display: grid; grid-template-columns: auto 1fr; column-gap: 14px; align-items: center; padding: 12px 18px; }
@@ -1272,7 +1179,7 @@ body.speaker-window.stale .sp-stale { display: block; }
 .c6-warn { color: var(--danger); }
 </style>
 
-<section class="slide" id="p13" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="70">
+<section class="slide" id="p11" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="70">
   <div class="slide-body">
     <p class="eyebrow">規則和檢查越做越多，就會被略過</p>
     <h2>人、警報、AI 都有這個現象</h2>
@@ -1283,7 +1190,7 @@ body.speaker-window.stale .sp-stale { display: block; }
       </div>
       <div class="card machine">
         <strong>警報：一直響，就被無視</strong>
-        <p>回歸紀錄把唯一的紅燈，直接算給一支老是 flaky<span class="gloss">（時好時壞）</span> 的舊測試，理由是單獨跑就過</p>
+        <p>測試老是時好時壞，大家就習慣不理紅燈；連唯一的一次紅燈，也被當成老毛病帶過</p>
       </div>
       <div class="card agent">
         <strong>AI：回饋一多，也會漏</strong>
@@ -1296,14 +1203,14 @@ body.speaker-window.stale .sp-stale { display: block; }
   <aside class="notes">
     <p>這個問題就是：東西一多，就會被略過。我覺得不只 AI 會這樣，人和警報也一樣。</p>
     <p>先說人。我開的 86 個 PR 上，一共有 1,637 則對話，人親手寫的大概只有 45 則，百分之三左右。這不能怪大家偷懶，AI 一波就能貼三十則，人讀得完的就那幾則。</p>
-    <p>警報也是。flaky 測試偶爾會無故變紅，久了大家就習慣不理紅燈。我們有一份回歸紀錄，就直接把唯一的紅燈算給一支老是 flaky 的舊測試，理由是單獨跑就過。</p>
+    <p>警報也是。測試如果老是時好時壞，久了大家就習慣不理紅燈。我們就有一次，唯一的一次紅燈，也被當成那支測試的老毛病帶過。</p>
     <p>AI 也一樣，review 一多，它就只讀摘要。它漏讀過兩次，其中一次漏掉的那份 review，裡面就有一個 Critical。</p>
     <p>寫《清單革命》的外科醫師 Gawande 講得很直接：好清單很短，只放最致命、不能漏的步驟。</p>
     <p>可是東西還是一直變多，那我自己是怎麼管的？</p>
   </aside>
 </section>
 
-<section class="slide" id="p14" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="75">
+<section class="slide" id="p12" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="75">
   <div class="slide-body">
     <p class="eyebrow">我怎麼管越來越多的東西：每天跑的一個循環</p>
     <h2>我的工作脈絡：自己記、自己清</h2>
@@ -1334,7 +1241,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   </aside>
 </section>
 
-<section class="slide" id="p15" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="80">
+<section class="slide" id="p13" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="80">
   <div class="slide-body">
     <p class="eyebrow">這個循環自己也出過錯</p>
     <h2>消化這一步，也是一道 Checker</h2>
@@ -1345,12 +1252,12 @@ body.speaker-window.stale .sp-stale { display: block; }
         </thead>
         <tbody>
           <tr>
-            <th scope="row">記錄端（hook）<span class="tag high">硬</span><small>系統一定觸發 × 程式判定</small></th>
-            <td>不看對話在哪個目錄，33 場 benchmark<span class="gloss">（基準測試）</span> 測試對話全收進來</td>
+            <th scope="row">記錄端（hook）<small>每句話都會記，照程式規則</small></th>
+            <td>不看對話在哪個目錄，33 場跑測試題的對話全收進來</td>
             <td>對話目錄在 /tmp、/var/folders 底下就不記，7 個情境都測過</td>
           </tr>
           <tr>
-            <th scope="row">消化端（排程）<span class="tag medium">半硬</span><small>系統一定觸發 × AI 判斷</small></th>
+            <th scope="row">消化端（排程）<small>每天一定會跑，但由 AI 判斷</small></th>
             <td>不看證據，把 16 場判成真進度，脈絡檔寫「產生驗收測試 skill 已完成並 merge」，<b>看板上還是 done:false</b></td>
             <td>要寫成已完成，那場要看得到 PR、commit<span class="gloss">（提交）</span> 或連結，不然只能寫進行中</td>
           </tr>
@@ -1367,13 +1274,13 @@ body.speaker-window.stale .sp-stale { display: block; }
   </div>
   <aside class="notes">
     <p>沒有東西檢查它，10 月就出事了。</p>
-    <p>10 月 13、14 號，我在跑前面講的 board-sync benchmark，一口氣開了 33 場測試對話。hook<span class="gloss">（觸發腳本）</span> 不看對話在哪個目錄，全部照收。14 號的排程也不看證據，把其中 16 場判成真的進度。結果我的脈絡檔寫著：產生驗收測試的 skill<span class="gloss">（技能）</span> 已完成並 merge<span class="gloss">（合併）</span>。可是看板上那支 skill 還是 done:false，那句話只是測試題裡的字串。兩個禮拜後我核對證據才發現，10/28 更正，補了兩道。</p>
-    <p>記錄端補成硬的，就是下面這幾行：對話的目錄在 /tmp 或 /var/folders 底下就不記。消化端只能補成半硬：排程一定會跑，但判斷還是靠 AI，所以我在 prompt<span class="gloss">（提示詞）</span> 加了證據規則，要寫成已完成，那場對話要看得到 PR、commit 或連結，不然只能寫進行中。</p>
-    <p>這剛好對到前面那張誰觸發、誰判定的 2×2。消化這一步，本身也是一道 Checker<span class="gloss">（檢查機制）</span>。那同一個循環，能不能拿來管 Checker？</p>
+    <p>10 月 13、14 號，我在跑前面講的 board-sync 測試題，一口氣開了 33 場測試對話。hook<span class="gloss">（觸發腳本）</span> 不看對話在哪個目錄，全部照收。14 號的排程也不看證據，把其中 16 場判成真的進度。結果我的脈絡檔寫著：產生驗收測試的 skill<span class="gloss">（技能）</span> 已完成並 merge<span class="gloss">（合併）</span>。可是看板上那支 skill 還是 done:false，那句話只是測試題裡的字串。兩個禮拜後我核對證據才發現，10/28 更正，補了兩道。</p>
+    <p>記錄端改成用程式擋，就是下面這幾行：對話的目錄在 /tmp 或 /var/folders 底下就不記。消化端還是要靠 AI 判斷，所以我在 prompt<span class="gloss">（提示詞）</span> 加了證據規則，要寫成已完成，那場對話要看得到 PR、commit 或連結，不然只能寫進行中。</p>
+    <p>所以消化這一步，本身也是一道 Checker<span class="gloss">（檢查機制）</span>。那同一個循環，能不能拿來管 Checker？</p>
   </aside>
 </section>
 
-<section class="slide" id="p16" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="75">
+<section class="slide" id="p14" data-chapter="第 4 章｜規則一多，又會被略過" data-seconds="75">
   <div class="slide-body">
     <p class="eyebrow">把同一個循環，套到 Checker 和規則上</p>
     <h2>要加還是要減，看記下來的資料</h2>
@@ -1414,7 +1321,7 @@ body.speaker-window.stale .sp-stale { display: block; }
 
 <!-- slide-file: 07-answer.html -->
 <style>
-/* 第 5 章（P17）專用樣式：class 一律 c7- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
+/* 第 5 章（P15）專用樣式：class 一律 c7- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
 .c7-list { display: flex; flex-direction: column; gap: 8px; }
 .c7-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) 236px; column-gap: 18px; align-items: center; padding: 8px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
 .c7-n { color: var(--primary); font-size: 22px; font-weight: 800; line-height: 1.3; white-space: nowrap; }
@@ -1426,7 +1333,7 @@ body.speaker-window.stale .sp-stale { display: block; }
 .slide-body.c7-body { gap: 16px; }
 </style>
 
-<section class="slide" id="p17" data-chapter="第 5 章｜我的答案" data-seconds="120">
+<section class="slide" id="p15" data-chapter="第 5 章｜我的答案" data-seconds="120">
   <div class="slide-body c7-body">
     <p class="eyebrow">把三段答案拼起來</p>
     <h2>下限看風險，上限看人的注意力，中間靠資料調整</h2>
@@ -1438,7 +1345,7 @@ body.speaker-window.stale .sp-stale { display: block; }
       </div>
       <div class="c7-row">
         <b class="c7-n">答案 2</b>
-        <div><p class="c7-a">重要的規則不能靠 AI 記得：觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果</p><p class="c7-r">回想：board-sync 的 benchmark<span class="gloss">（基準測試）</span> 裡，AI 說做完了，卻沒有做</p></div>
+        <div><p class="c7-a">重要的規則不能靠 AI 記得：觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果</p><p class="c7-r">回想：board-sync 的測試題，AI 說做完了，卻沒有做</p></div>
         <span class="c7-to">AI 時代：<br>重要的規則要做硬</span>
       </div>
       <div class="c7-row">
@@ -1452,7 +1359,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   <aside class="notes">
     <p>這頁把前面三段答案拼起來。</p>
     <p>答案 1：Checker 不是越多越好，每加一道都有成本，還可能出事。像工具目錄那個 PR，reviewer 要我加的檢查，差點讓整份目錄每小時停更。這是前提，所以不能一直加。</p>
-    <p>答案 2 回答題目第四句的 AI 時代。題目說原本靠工程師記得的規則，要變成機器強制；我覺得換成 AI 也一樣，重要的規則不能靠 AI 記得。觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果。像 board-sync 的 benchmark，AI 說做完了，卻沒有做，所以不能只聽它說。</p>
+    <p>答案 2 回答題目第四句的 AI 時代。題目說原本靠工程師記得的規則，要變成機器強制；我覺得換成 AI 也一樣，重要的規則不能靠 AI 記得。觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果。像 board-sync 的測試題，AI 說做完了，卻沒有做，所以不能只聽它說。</p>
     <p>答案 3：最多能放幾道，看人的注意力。我開的 86 個 PR 上，人親手寫的對話只有百分之三左右，人讀得完的就這麼多。中間要加還是要減，就靠剛剛那個循環：每一道響了幾次、抓到幾次真問題都記下來，該收斂的收斂，該淡出的淡出。</p>
     <p>讀物這邊，R1 的作者之一 Uncle Bob，媒體轉述他說現在只核准規格、不讀 code。我自己也不讀 code，我看的是驗證結果和 AC，這就是答案 2 在講的事。</p>
     <p>合起來，就是我一開始放在題目下面的答案。上限看人的注意力、中間靠資料調整，這兩段今天都講了；下限看風險，出事會很痛的地方至少要有一道，這段我今天沒有展開。最後，我留三句話和三個問題給大家。</p>
@@ -1461,7 +1368,7 @@ body.speaker-window.stale .sp-stale { display: block; }
 
 <!-- slide-file: 08-close.html -->
 <style>
-/* 第 6 章（P18–P19）專用樣式：class 一律 c8- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
+/* 第 6 章（P16–P17）專用樣式：class 一律 c8- 開頭，只作用在本章；間距交給 .slide-body 的 24px gap */
 .c8-pairs { display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px 18px; }
 .c8-head { font-size: 18px; font-weight: 700; color: var(--muted); letter-spacing: .08em; }
 .c8-take { position: relative; padding: 10px 16px 10px 62px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); font-weight: 700; line-height: 1.45; }
@@ -1478,7 +1385,7 @@ body.speaker-window.stale .sp-stale { display: block; }
 .c8-more li + li { margin-top: 2px; }
 </style>
 
-<section class="slide" id="p18" data-chapter="第 6 章｜收尾與討論" data-seconds="90">
+<section class="slide" id="p16" data-chapter="第 6 章｜收尾與討論" data-seconds="90">
   <div class="slide-body">
     <p class="eyebrow">收尾｜討論留到三位講者都講完</p>
     <h2>我想留給大家的三句話和三個問題</h2>
@@ -1504,7 +1411,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   </aside>
 </section>
 
-<section class="slide" id="p19" data-chapter="第 6 章｜收尾與討論" data-seconds="30">
+<section class="slide" id="p17" data-chapter="第 6 章｜收尾與討論" data-seconds="30">
   <div class="slide-body">
     <h2>參考資料</h2>
     <div class="c8-reads">
