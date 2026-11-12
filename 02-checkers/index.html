@@ -808,7 +808,7 @@ body.speaker-window.stale .sp-stale { display: block; }
         <p>2001 年鞋子炸彈未遂，2006 年起美國安檢要脫鞋，2025 年 7 月取消</p>
       </div>
     </div>
-    <div class="thesis">換成寫 code<span class="gloss">（程式碼）</span>：人看 code 越來越少，我的 PR<span class="gloss">（合併請求）</span> 最多同時有 5 家 AI 在審<br>到底要設幾道安檢？</div>
+    <div class="thesis">換成寫 code：人看 code 越來越少，我的 PR 最多同時有 5 家 AI 在審<br>到底要設幾道安檢？</div>
     <p class="c0-source">出處（2026-10-28 查證）：TSA 大事記、TSA PreCheck 說明、DHS 2025-07-08 新聞稿、歐盟 CORDIS</p>
   </div>
   <aside class="notes">
@@ -827,10 +827,10 @@ body.speaker-window.stale .sp-stale { display: block; }
     <h2>02｜AI 開發流程到底需要多少 Checker？</h2>
     <blockquote class="c0-prompt">
       <ul>
-        <li><span><b>探討問題：</b>如果人工 Code Review<span class="gloss">（程式碼審查）</span> 降低，CI<span class="gloss">（持續整合）</span> 到底需要多少 Checker<span class="gloss">（檢查機制）</span> 才足夠？Unit Test<span class="gloss">（單元測試）</span>、Integration Test<span class="gloss">（整合測試）</span>、SAST<span class="gloss">（靜態安全掃描）</span>、Architecture Test<span class="gloss">（架構測試）</span>、Mutation Test<span class="gloss">（變異測試）</span> 是否越多越好？</span></li>
-        <li><span><b>問題本質：</b>Checker 本身也有維護成本、Pipeline<span class="gloss">（管線）</span> 時間與 False Positive<span class="gloss">（誤報）</span>；核心不是數量，而是要控制哪些 Failure Mode<span class="gloss">（失敗模式）</span>。</span></li>
-        <li><span><b>解法：</b>從風險反推控制：Regression<span class="gloss">（回歸問題）</span>→Test<span class="gloss">（測試）</span>；Architecture Drift<span class="gloss">（架構漂移）</span>→Architecture Test；Security<span class="gloss">（資安）</span>→SAST；Breaking Change<span class="gloss">（破壞性變更）</span>→Compatibility Check<span class="gloss">（相容性檢查）</span>。採 Risk<span class="gloss">（風險）</span> → Control<span class="gloss">（控制）</span> → Checker。</span></li>
-        <li><span><b>AI 時代差異：</b>Agent<span class="gloss">（AI 代理）</span> 可高速、跨大量檔案修改，因此原本靠工程師記得的規則，更需要變成機器強制。</span></li>
+        <li><span><b>探討問題：</b>如果人工 Code Review 降低，CI 到底需要多少 Checker<span class="gloss">（檢查機制）</span> 才足夠？Unit Test、Integration Test、SAST<span class="gloss">（靜態安全掃描）</span>、Architecture Test<span class="gloss">（架構測試）</span>、Mutation Test<span class="gloss">（變異測試）</span> 是否越多越好？</span></li>
+        <li><span><b>問題本質：</b>Checker 本身也有維護成本、Pipeline 時間與 False Positive；核心不是數量，而是要控制哪些 Failure Mode<span class="gloss">（失敗模式）</span>。</span></li>
+        <li><span><b>解法：</b>從風險反推控制：Regression→Test；Architecture Drift<span class="gloss">（架構漂移）</span>→Architecture Test；Security→SAST；Breaking Change→Compatibility Check<span class="gloss">（相容性檢查）</span>。採 Risk → Control → Checker。</span></li>
+        <li><span><b>AI 時代差異：</b>Agent 可高速、跨大量檔案修改，因此原本靠工程師記得的規則，更需要變成機器強制。</span></li>
       </ul>
     </blockquote>
     <div class="thesis c0-keep"><span class="c0-answer">我的答案</span>Checker 要幾道：最少要放幾道由<b>風險</b>決定，最多能放幾道由<b>注意力</b>決定，中間的增減靠<b>資料</b>調整。</div>
@@ -904,7 +904,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   <div class="slide-body">
     <div class="eyebrow">一開始的直覺：人看得少，就多找幾家 AI 來 review</div>
     <h2>多一家，真的多抓到東西</h2>
-    <p class="c2-ctx">3 月，某個 iOS SDK<span class="gloss">（開發套件）</span> 專案的第一版，功能一次開成一個 PR。那時我在比較幾家 AI reviewer<span class="gloss">（AI 審查者）</span>，同一波有 4 家在審。</p>
+    <p class="c2-ctx">3 月，某個 iOS SDK 專案的第一版，功能一次開成一個 PR。那時我在比較幾家 AI reviewer，同一波有 4 家在審。</p>
     <div class="grid cols-2 c2-p6">
       <figure class="c2-venn">
         <svg viewBox="50 5 400 350" role="img" aria-labelledby="c2-venn-t c2-venn-d">
@@ -934,7 +934,7 @@ body.speaker-window.stale .sp-stale { display: block; }
   <aside class="notes">
     <p>我自己就這樣試過，確實有幫助。</p>
     <p>3 月我在做某個 iOS SDK 專案的第一版，功能一次開成一個 PR。那時候我在比較幾家 AI reviewer，這個 PR 同一波就有 4 家在審，一共 30 則意見。左邊的圓，大小是每家的意見數，重疊的位置是示意。</p>
-    <p>我把這 30 則一則一則去歸類，大概是 24 個不同的問題，只有 4 個是兩家以上都有抓到。最嚴重的兩個 P0<span class="gloss">（最高優先級）</span>，use-after-free 跟 JS injection，都只有一家看到。也就是說，那一波如果少了那一家，這兩個 P0 可能就沒人發現。</p>
+    <p>我把這 30 則一則一則去歸類，大概是 24 個不同的問題，只有 4 個是兩家以上都有抓到。最嚴重的兩個 P0，use-after-free 跟 JS injection，都只有一家看到。也就是說，那一波如果少了那一家，這兩個 P0 可能就沒人發現。</p>
     <p>這兩個數字標估計，因為是我自己歸類的。今天沒標的數字都是實測，有標的才是估計，或是別人的說法。</p>
     <p>所以題目問是不是越多越好，單看抓問題，多一家真的會多抓到東西。可是每多一家，也多一份成本。</p>
   </aside>
@@ -947,7 +947,7 @@ body.speaker-window.stale .sp-stale { display: block; }
     <div class="grid cols-3 c2-costs">
       <div class="card">
         <strong>維護成本</strong>
-        <p class="c2-it">自己做的 Checker<span class="gloss">（檢查機制）</span>，像測試、review agent<span class="gloss">（審查用的 AI 代理）</span>、skill<span class="gloss">（技能）</span>，都要定期維護</p>
+        <p class="c2-it">自己做的 Checker<span class="gloss">（檢查機制）</span>，像測試、review agent、skill，都要定期維護</p>
         <div class="c2-mb" role="img" aria-label="程式行數：board-sync 測試 4,494 行、實作 2,656 行；AI Board 測試 7,533 行、產品碼 6,608 行">
           <p class="c2-mb-t">board-sync<span class="gloss">（同步看板的工具）</span></p>
           <div class="c2-mb-r c2-test" style="--v:.597"><span>測試</span><i></i><b>4,494</b></div>
@@ -959,13 +959,13 @@ body.speaker-window.stale .sp-stale { display: block; }
         </div>
       </div>
       <div class="card">
-        <strong>Pipeline<span class="gloss">（管線）</span> 與等待時間</strong>
-        <p class="c2-it"><b>10 天、9 波</b>剛剛那個 PR，前後 5 家 reviewer<span class="gloss">（審查者）</span>，光是修正就 9 波</p>
-        <p class="c2-it">第 5 波的修正，還改出一個新的 P0<span class="gloss">（最高優先級）</span></p>
+        <strong>Pipeline 與等待時間</strong>
+        <p class="c2-it"><b>10 天、9 波</b>剛剛那個 PR，前後 5 家 reviewer，光是修正就 9 波</p>
+        <p class="c2-it">第 5 波的修正，還改出一個新的 P0</p>
       </div>
       <div class="card">
-        <strong>False Positive<span class="gloss">（誤報）</span> 與雜訊</strong>
-        <p class="c2-it"><b>12.5%</b>自建 review<span class="gloss">（審查）</span> 跑 232 次，說「0 項問題」的比例</p>
+        <strong>False Positive 與雜訊</strong>
+        <p class="c2-it"><b>12.5%</b>自建 review 跑 232 次，說「0 項問題」的比例</p>
         <p class="c2-it">幾乎每次都會挑出東西，什麼時候停，只能人決定</p>
       </div>
     </div>
@@ -984,26 +984,26 @@ body.speaker-window.stale .sp-stale { display: block; }
   <div class="slide-body">
     <div class="eyebrow">意見一多，重要的反而被淹掉</div>
     <h2>多一家 reviewer，多出來的兩個麻煩</h2>
-    <p class="c2-ctx">5 月，同一個 iOS 專案的 App：把一個太大的登入畫面拆開，4 家 reviewer<span class="gloss">（審查者）</span> 一起審</p>
+    <p class="c2-ctx">5 月，同一個 iOS 專案的 App：把一個太大的登入畫面拆開，4 家 reviewer 一起審</p>
     <div class="grid cols-2">
       <div class="card c2-story">
-        <strong>被淹掉：只有一家抓到的 Major<span class="gloss">（重大）</span></strong>
+        <strong>被淹掉：只有一家抓到的 Major</strong>
         <ol class="c2-steps">
           <li>4 家裡只有 1 家指出：按鍵盤 return<span class="gloss">（Enter 鍵）</span> 會送出第二次登入</li>
           <li>那一輪只處理了另一家的意見，這則被漏掉</li>
           <li class="c2-hit"><b>66.5 小時</b>後才修</li>
-          <li>修好之前，自建 Claude review<span class="gloss">（審查）</span> 在這個 PR 跑了 <b>16 次</b>，一次都沒提到</li>
+          <li>修好之前，自建 Claude review 在這個 PR 跑了 <b>16 次</b>，一次都沒提到</li>
         </ol>
       </div>
       <div class="card c2-story">
-        <strong>一直誤報：同一個 Warning<span class="gloss">（警告）</span></strong>
+        <strong>一直誤報：同一個 Warning</strong>
         <ol class="c2-steps">
           <li class="c2-hit">同一個 Warning 被報了 <b>4 次</b></li>
           <li>寫長文證明是誤報，連 Claude 自己都承認了</li>
           <li>下一輪，照樣再報一次</li>
           <li class="c2-fix">改結構：拿掉容易混淆的那層包裝，寫入只走一個入口，就不再出現</li>
         </ol>
-        <p class="c2-rule">我的規則：同一處被 flag<span class="gloss">（標記）</span> 兩次，就改結構</p>
+        <p class="c2-rule">我的規則：同一處被 flag 兩次，就改結構</p>
       </div>
     </div>
     <div class="thesis">每多一家 reviewer，就多一堆意見要追</div>
@@ -1020,21 +1020,21 @@ body.speaker-window.stale .sp-stale { display: block; }
   <div class="slide-body c2-catalog-body">
     <div class="eyebrow">而且 reviewer 只會叫你加，不會叫你拿掉</div>
     <h2>照 reviewer 加的一道檢查，差點讓工具目錄停更</h2>
-    <p class="c2-ctx">AI Board 是我們團隊的 AI 開發流程看板；看板上的 skill<span class="gloss">（技能）</span>，要在工具目錄裡找得到才算能用。<br>這個 PR 要讓工具目錄每小時自動更新。</p>
+    <p class="c2-ctx">AI Board 是我們團隊的 AI 開發流程看板；看板上的 skill，要在工具目錄裡找得到才算能用。<br>這個 PR 要讓工具目錄每小時自動更新。</p>
     <div class="flow c2-chain">
-      <div class="node">跑了 6 輪 review<span class="gloss">（審查）</span><small>一直被要求加嚴格檢查</small></div>
+      <div class="node">跑了 6 輪 review<small>一直被要求加嚴格檢查</small></div>
       <div class="arrow">→</div>
       <div class="node">第 4、5 輪各加一道<small>合併上線</small></div>
       <div class="arrow">→</div>
       <div class="node c2-bad">當天發現會撞名<small>有人照流程登記一支工具，<br>就每小時失敗、整份停更</small></div>
       <div class="arrow">→</div>
-      <div class="node">被另一個 agent<span class="gloss">（AI 代理）</span> 攔下<small>還沒發生；<br>當晚改成「以掃描為準、<br>略過手寫並警告」</small></div>
+      <div class="node">被另一個 agent 攔下<small>還沒發生；<br>當晚改成「以掃描為準、<br>略過手寫並警告」</small></div>
     </div>
     <div class="callout good c2-nogo"><strong>同一個 PR，我也刻意不加 3 道檢查，因為都會誤報</strong></div>
     <div class="thesis">到這裡的答案 1：Checker<span class="gloss">（檢查機制）</span> 不是越多越好，每加一道都有成本，還可能出事</div>
   </div>
   <aside class="notes">
-    <p>我就有一次照 reviewer<span class="gloss">（審查者）</span> 的意見加檢查，差點出事。</p>
+    <p>我就有一次照 reviewer 的意見加檢查，差點出事。</p>
     <p>AI Board 是我們團隊的 AI 開發流程看板。看板上的 skill，要在工具目錄裡找得到才算能用；目錄裡有自動掃描出來的，也有人手寫的條目。這個 PR 要讓工具目錄每小時自動更新。</p>
     <p>它跑了 6 輪 review，reviewer 一直要加嚴格檢查，第 4、5 輪各加了一道，就合併了。第 5 輪那道是：手寫條目蓋過掃描結果，就失敗。合併當天發現它跟登記流程衝突：有人照流程登記一支工具，下次排程就撞名，之後每小時失敗、整份目錄停更。還好那時還沒人登記，另一個 agent 先攔下來，當晚就改掉。</p>
     <p>我也刻意決定有 3 道不加，因為都會誤報。決定不加，也要有人負責。</p>
@@ -1070,14 +1070,14 @@ body.speaker-window.stale .sp-stale { display: block; }
         <blockquote class="quote">每個實作階段完成後（或整體任務完成後），必須執行下列 skill，不得跳過<cite>我的實作紀律檔；「下列」指的是 verification-before-completion 和 requesting-code-review</cite></blockquote>
         <p class="c4-sub">這份規則檔，AI 根本沒讀到</p>
       </div>
-      <div class="stat c4-hero"><b>0 次</b><span>這兩個 skill<span class="gloss">（技能）</span> 在 135 天裡（6/16–10/28）被觸發的次數</span></div>
+      <div class="stat c4-hero"><b>0 次</b><span>這兩個 skill 在 135 天裡（6/16–10/28）被觸發的次數</span></div>
     </div>
     <div class="spacer"></div>
     <div class="thesis">寫成文字的規則，要 AI 自己讀到、自己想起來才會跑</div>
   </div>
   <aside class="notes">
     <p>我真的這樣做過。</p>
-    <p>我在 ai-context<span class="gloss">（AI 工作脈絡資料夾）</span> 放了幾份寫給 AI 看的規則，像 code review<span class="gloss">（程式碼審查）</span> 的 SOP<span class="gloss">（標準作業程序）</span> 就在裡面。其中一份是實作紀律檔，講 AI 實作時要守的事，標題就寫「強制規則」。畫面上這條是說：每個實作階段做完，必須跑 verification-before-completion<span class="gloss">（完成前先驗證）</span> 跟 requesting-code-review<span class="gloss">（請人審查程式碼）</span>，不得跳過。一個是做完先驗證，一個是做完請 review。我的想法很簡單，AI 說做完之前，要先驗證過、也被 review 過。</p>
+    <p>我在 ai-context<span class="gloss">（AI 工作脈絡資料夾）</span> 放了幾份寫給 AI 看的規則，像 code review 的 SOP 就在裡面。其中一份是實作紀律檔，講 AI 實作時要守的事，標題就寫「強制規則」。畫面上這條是說：每個實作階段做完，必須跑 verification-before-completion<span class="gloss">（完成前先驗證）</span> 跟 requesting-code-review<span class="gloss">（請人審查程式碼）</span>，不得跳過。一個是做完先驗證，一個是做完請 review。我的想法很簡單，AI 說做完之前，要先驗證過、也被 review 過。</p>
     <p>寫得夠兇了吧？我把 135 天的對話紀錄翻過一遍，這兩個 skill 被觸發 0 次。後來才發現，這份規則檔根本沒有被載入，AI 連讀都沒讀到。規則寫了，AI 不跑，就跟沒寫一樣。</p>
     <p>我覺得差在兩件事：誰叫它跑，誰判斷它做得對不對。寫成文字的規則，這兩件事都交給 AI 自己；就算 AI 讀到了，也不一定想得起來。那要怎麼做硬？</p>
   </aside>
@@ -1116,10 +1116,10 @@ body.speaker-window.stale .sp-stale { display: block; }
     <h2>四種硬度：越上面，越不靠 AI 記得</h2>
     <div class="spacer"></div>
     <div class="ladder">
-      <div class="rung"><b>會被提醒</b><span>寫在 CLAUDE.md<span class="gloss">（給 AI 看的專案規則檔）</span>、skill<span class="gloss">（技能）</span> 裡，要 AI 自己記得</span></div>
-      <div class="rung"><b>一定會被審</b><span>每個 PR 自動跑的 AI reviewer<span class="gloss">（AI 審查者）</span>、每天的排程</span></div>
-      <div class="rung"><b>會被擋下</b><span>hook<span class="gloss">（觸發腳本）</span>、CI 必過，沒過就不能往下走</span></div>
-      <div class="rung"><b>做不到</b><span>權限 deny<span class="gloss">（拒絕）</span>、不給憑證，AI 想做也做不了</span></div>
+      <div class="rung"><b>會被提醒</b><span>寫在 CLAUDE.md<span class="gloss">（給 AI 看的專案規則檔）</span>、skill 裡，要 AI 自己記得</span></div>
+      <div class="rung"><b>一定會被審</b><span>每個 PR 自動跑的 AI reviewer、每天的排程</span></div>
+      <div class="rung"><b>會被擋下</b><span>hook、CI 必過，沒過就不能往下走</span></div>
+      <div class="rung"><b>做不到</b><span>權限 deny、不給憑證，AI 想做也做不了</span></div>
     </div>
     <p class="c5-up"><b>例子</b>AI 刪資料前要先問我：口頭糾正、寫進規則、綁進 skill 的流程（6–10 月 AI 停下來問我 149 次），最後由系統擋下</p>
     <p class="c5-reading"><span class="reading">R2 Harness engineering</span>也把檢查分成兩種：程式判定的便宜又穩定，AI 判斷的比較貴，每次結果還可能不同</p>
@@ -1157,7 +1157,7 @@ body.speaker-window.stale .sp-stale { display: block; }
     <div class="thesis">到這裡的答案 2：重要的規則不能靠 AI 記得：<br>觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果</div>
   </div>
   <aside class="notes">
-    <p>我自己就遇過 AI 說做完了，卻沒有做。board-sync 是讓 AI 更新看板的 skill<span class="gloss">（技能）</span>，每次發版前，我都會請它跑一組固定的測試題，看它有沒有變慢、變壞。有一次它說做完了，可是有幾題根本沒寫進看板。更早還有一次，它把字寫進錯的地方，也跟我說成功。</p>
+    <p>我自己就遇過 AI 說做完了，卻沒有做。board-sync 是讓 AI 更新看板的 skill，每次發版前，我都會請它跑一組固定的測試題，看它有沒有變慢、變壞。有一次它說做完了，可是有幾題根本沒寫進看板。更早還有一次，它把字寫進錯的地方，也跟我說成功。</p>
     <p>所以 AI 說做完了，我不收，要附上驗證結果。規則我來寫；什麼時候跑交給系統，不靠 AI 想到；跑完由系統留下結果，AI 改不到。下一關先看結果對不對，程式判斷不了的，我想用 Jev 這類工具快速判斷，提交的內容是不是真的跑過驗證。Jev 是只回判定、不寫字的模型，廠商說又快又便宜，我還沒驗過。</p>
     <p>重要的規則，不能靠 AI 記得。可是規則和檢查越做越多，又會遇到另一個問題。</p>
   </aside>
@@ -1194,7 +1194,7 @@ body.speaker-window.stale .sp-stale { display: block; }
       </div>
       <div class="card agent">
         <strong>AI：回饋一多，也會漏</strong>
-        <p>review<span class="gloss">（審查）</span> 一多就只讀摘要、沒讀行內留言；漏讀 2 次，其中一份裡有 Critical<span class="gloss">（嚴重）</span></p>
+        <p>review 一多就只讀摘要、沒讀行內留言；漏讀 2 次，其中一份裡有 Critical</p>
       </div>
     </div>
     <div class="legend" aria-label="顏色圖例"><span class="human">人</span><span class="agent">agent</span><span class="machine">機器</span></div>
@@ -1217,7 +1217,7 @@ body.speaker-window.stale .sp-stale { display: block; }
     <div class="spacer"></div>
     <div class="c6-split">
       <div class="loop">
-        <div class="step"><strong>記錄</strong><p>hook<span class="gloss">（觸發腳本）</span> 默默記下我每句話的前 100 字</p></div>
+        <div class="step"><strong>記錄</strong><p>hook 默默記下我每句話的前 100 字</p></div>
         <div class="step"><strong>消化</strong><p>每天排程分三類：<br>新變化、只是提到、無關</p></div>
         <div class="step"><strong>收斂</strong><p>更新工作脈絡檔，記下我現在在做什麼</p></div>
         <div class="step"><strong>淡出</strong><p>45 天沒提就移到淡出區，再 90 天就刪掉</p></div>
@@ -1227,7 +1227,7 @@ body.speaker-window.stale .sp-stale { display: block; }
         <div class="stat"><b>4</b><span>條在 10/16 第一次自動淡出</span></div>
       </div>
     </div>
-    <p><span class="reading">R5 Codex-maxxing</span> 裡面的 loop<span class="gloss">（迴圈）</span>：Context<span class="gloss">（上下文）</span> → Tools<span class="gloss">（工具）</span> → Memory<span class="gloss">（記憶）</span> → Recurrence<span class="gloss">（定期重跑）</span> → Review<span class="gloss">（審查）</span>，跟我這個幾乎一樣</p>
+    <p><span class="reading">R5 Codex-maxxing</span> 裡面的 loop：Context → Tools → Memory → Recurrence<span class="gloss">（定期重跑）</span> → Review，跟我這個幾乎一樣</p>
     <div class="spacer"></div>
   </div>
   <aside class="notes">
@@ -1259,7 +1259,7 @@ body.speaker-window.stale .sp-stale { display: block; }
           <tr>
             <th scope="row">消化端（排程）<small>每天一定會跑，但由 AI 判斷</small></th>
             <td>不看證據，把 16 場判成真進度，脈絡檔寫「產生驗收測試 skill 已完成並 merge」，<b>看板上還是 done:false</b></td>
-            <td>要寫成已完成，那場要看得到 PR、commit<span class="gloss">（提交）</span> 或連結，不然只能寫進行中</td>
+            <td>要寫成已完成，那場要看得到 PR、commit 或連結，不然只能寫進行中</td>
           </tr>
         </tbody>
       </table>
@@ -1274,8 +1274,8 @@ body.speaker-window.stale .sp-stale { display: block; }
   </div>
   <aside class="notes">
     <p>沒有東西檢查它，10 月就出事了。</p>
-    <p>10 月 13、14 號，我在跑前面講的 board-sync 測試題，一口氣開了 33 場測試對話。hook<span class="gloss">（觸發腳本）</span> 不看對話在哪個目錄，全部照收。14 號的排程也不看證據，把其中 16 場判成真的進度。結果我的脈絡檔寫著：產生驗收測試的 skill<span class="gloss">（技能）</span> 已完成並 merge<span class="gloss">（合併）</span>。可是看板上那支 skill 還是 done:false，那句話只是測試題裡的字串。兩個禮拜後我核對證據才發現，10/28 更正，補了兩道。</p>
-    <p>記錄端改成用程式擋，就是下面這幾行：對話的目錄在 /tmp 或 /var/folders 底下就不記。消化端還是要靠 AI 判斷，所以我在 prompt<span class="gloss">（提示詞）</span> 加了證據規則，要寫成已完成，那場對話要看得到 PR、commit 或連結，不然只能寫進行中。</p>
+    <p>10 月 13、14 號，我在跑前面講的 board-sync 測試題，一口氣開了 33 場測試對話。hook 不看對話在哪個目錄，全部照收。14 號的排程也不看證據，把其中 16 場判成真的進度。結果我的脈絡檔寫著：產生驗收測試的 skill 已完成並 merge。可是看板上那支 skill 還是 done:false，那句話只是測試題裡的字串。兩個禮拜後我核對證據才發現，10/28 更正，補了兩道。</p>
+    <p>記錄端改成用程式擋，就是下面這幾行：對話的目錄在 /tmp 或 /var/folders 底下就不記。消化端還是要靠 AI 判斷，所以我在 prompt 加了證據規則，要寫成已完成，那場對話要看得到 PR、commit 或連結，不然只能寫進行中。</p>
     <p>所以消化這一步，本身也是一道 Checker<span class="gloss">（檢查機制）</span>。那同一個循環，能不能拿來管 Checker？</p>
   </aside>
 </section>
@@ -1288,12 +1288,12 @@ body.speaker-window.stale .sp-stale { display: block; }
       <div class="card">
         <strong>記錄</strong>
         <p>一響就記一筆：抓到、誤報、重複、漏掉</p>
-        <p class="c6-ex">例：同一個 Warning<span class="gloss">（警告）</span> 報了 4 次</p>
+        <p class="c6-ex">例：同一個 Warning 報了 4 次</p>
       </div>
       <div class="card">
         <strong>消化</strong>
         <p>定期分類，不靠感覺</p>
-        <p class="c6-ex">例：自建 review<span class="gloss">（審查）</span> 跑 232 次，只有 12.5% 說 0 項問題</p>
+        <p class="c6-ex">例：自建 review 跑 232 次，只有 12.5% 說 0 項問題</p>
       </div>
       <div class="card">
         <strong>收斂</strong>
@@ -1340,7 +1340,7 @@ body.speaker-window.stale .sp-stale { display: block; }
     <div class="c7-list">
       <div class="c7-row">
         <b class="c7-n">答案 1</b>
-        <div><p class="c7-a">Checker<span class="gloss">（檢查機制）</span> 不是越多越好，每加一道都有成本，還可能出事</p><p class="c7-r">回想：工具目錄那個 PR，reviewer<span class="gloss">（審查者）</span> 要我加的檢查，差點讓整份目錄停更</p></div>
+        <div><p class="c7-a">Checker<span class="gloss">（檢查機制）</span> 不是越多越好，每加一道都有成本，還可能出事</p><p class="c7-r">回想：工具目錄那個 PR，reviewer 要我加的檢查，差點讓整份目錄停更</p></div>
         <span class="c7-to">前提：不能一直加</span>
       </div>
       <div class="c7-row">
@@ -1392,7 +1392,7 @@ body.speaker-window.stale .sp-stale { display: block; }
     <div class="c8-pairs">
       <div class="c8-head">帶走</div>
       <div class="c8-head">留給討論</div>
-      <div class="c8-take"><b>1</b>先問這裡最可能壞在哪，再決定放什麼 Checker<span class="gloss">（檢查機制）</span>，不要先問還能加什麼工具。<small>回想：一個 PR 5 家 reviewer<span class="gloss">（審查者）</span>、9 波，修正又帶出新的 P0<span class="gloss">（最高優先級）</span></small></div>
+      <div class="c8-take"><b>1</b>先問這裡最可能壞在哪，再決定放什麼 Checker<span class="gloss">（檢查機制）</span>，不要先問還能加什麼工具。<small>回想：一個 PR 5 家 reviewer、9 波，修正又帶出新的 P0</small></div>
       <div class="c8-ask">如果只能留三道 Checker，你留哪三道？</div>
       <div class="c8-take"><b>2</b>越重要的規則越不能靠記得：觸發交給系統，判定能寫成程式就寫，交接時附上驗證結果。<small>回想：規則寫了不得跳過，135 天觸發 0 次</small></div>
       <div class="c8-ask">你寫過的「必須」規則，有幾條真的有東西在擋？</div>
@@ -1426,7 +1426,7 @@ body.speaker-window.stale .sp-stale { display: block; }
       <li><b>R2 延伸</b>：<a href="https://martinfowler.com/articles/sensors-for-coding-agents.html" target="_blank" rel="noopener">Böckeler〈Maintainability sensors for coding agents〉2026-05-27</a></li>
       <li><b>Uncle Bob 和 Booch（媒體轉述）</b>：<a href="https://startupfortune.com/uncle-bob-martin-says-he-no-longer-reads-ai-generated-code-and-the-developer-world-is-split/" target="_blank" rel="noopener">Startup Fortune，2026-07-25</a></li>
       <li><b>Gawande 談清單</b>：<a href="https://www.npr.org/2017/10/30/559996276/the-trick-to-surviving-a-high-stakes-high-pressure-job-try-a-checklist" target="_blank" rel="noopener">NPR Hidden Brain，2017-10-30</a>；<a href="https://hbr.org/podcast/2010/01/using-checklists-to-prevent-fa" target="_blank" rel="noopener">HBR IdeaCast，2010-01-22</a></li>
-      <li><b>今天的資料</b>：都是唯讀分析，來源是本機 Claude Code 對話紀錄、GitHub API（86 個 PR）、看板匯出和 hook<span class="gloss">（觸發腳本）</span> 設定檔</li>
+      <li><b>今天的資料</b>：都是唯讀分析，來源是本機 Claude Code 對話紀錄、GitHub API（86 個 PR）、看板匯出和 hook 設定檔</li>
     </ul>
   </div>
   <aside class="notes">
